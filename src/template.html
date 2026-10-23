@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WayKit · Поиск</title>
+<style>
+/* Шрифты из макета встроены в файл: PT Root UI VF (300–700) и Onest SemiBold для заголовков */
+@font-face {
+  font-family: "PT Root UI VF";
+  src: url(data:font/woff2;base64,{{FONT}}) format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Onest";
+  src: url(data:font/woff2;base64,{{ONEST_CYR}}) format("woff2");
+  font-weight: 600;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: "Onest";
+  src: url(data:font/woff2;base64,{{ONEST_LAT}}) format("woff2");
+  font-weight: 600;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Токены названы как переменные в Фигме (Color Primitives, Typography) */
+:root {
+  color-scheme: light;
+  --base-white: #ffffff;
+  --oat-soft-50: #f5f4f2;
+  --oat-soft-100: #e8e7e5;
+  --oat-soft-200: #dcdbd7;
+  --oat-soft-300: #c8c6c2;
+  --oat-soft-400: #a8a6a1;
+  --oat-soft-500: #83827d;
+  --oat-soft-600: #62605b;
+  --oat-soft-700: #4d4c48;
+  --oat-soft-800: #3a3936;
+  --oat-soft-900: #262623;
+  --oat-soft-950: #171715;
+  --sage-50: #edf2ed;
+  --sage-300: #b7c7b9;
+  --sage-500: #738776;
+  --sage-600: #526456;
+  --sage-700: #3f5044;
+  --yellow-accent: #f7fe94;
+  --red-error: #b9473a;
+  --on-dark: #f6f4f2;
+
+  --font-ui: "PT Root UI VF", "PT Root UI", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Onest", "PT Root UI VF", system-ui, sans-serif;
+
+  --shadow-pop: 0 2px 8.2px rgba(228, 226, 224, .4), 0 8px 24px rgba(38, 38, 35, .06);
+  --radius-field: 16px;
+  --gutter: 36px;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--oat-soft-50);
+  color: var(--oat-soft-900);
+  font-family: var(--font-ui);
+  font-size: 17px;
+  line-height: 26px;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: inherit; }
+button:disabled { cursor: default; }
+:focus-visible { outline: 2px solid var(--sage-500); outline-offset: 2px; }
+img, svg { display: block; max-width: 100%; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Типографика из стилей Фигмы */
+.t-overline { font-size: 13px; line-height: 18px; font-weight: 600; letter-spacing: .52px; text-transform: uppercase; }
+.t-body-sm { font-size: 15px; line-height: 24px; font-weight: 400; }
+.t-body-md { font-size: 17px; line-height: 26px; font-weight: 400; }
+.t-body-lg { font-size: 20px; line-height: 28px; font-weight: 400; }
+.t-label-md { font-size: 15px; line-height: 24px; font-weight: 500; }
+.t-label-lg { font-size: 17px; line-height: 26px; font-weight: 500; }
+.t-button-md { font-size: 17px; line-height: 26px; font-weight: 500; }
+.t-button-lg { font-size: 20px; line-height: 28px; font-weight: 500; }
+.t-title-sm { font-family: var(--font-display); font-size: 20px; line-height: 28px; font-weight: 600; }
+.t-headline-lg { font-family: var(--font-display); font-size: 56px; line-height: 64px; font-weight: 600; }
+
+/* Страница: шапка, баннер, строка поиска; колонка 1368 с полями 36 */
+.page {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  padding-bottom: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Шапка */
+.header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--oat-soft-200);
+}
+.header__left, .header__right, .nav, .auth { display: flex; align-items: center; }
+.header__left { gap: 24px; min-width: 0; }
+.header__right { gap: 24px; }
+.nav { gap: 4px; }
+.auth { gap: 8px; }
+.logo { display: flex; align-items: center; height: 40px; }
+.location { display: flex; align-items: center; gap: 8px; height: 40px; color: var(--oat-soft-900); }
+.nav__item {
+  text-decoration: none;
+  height: 40px; padding: 0 12px; display: flex; align-items: center; gap: 4px;
+  color: var(--oat-soft-600); border-radius: 12px; transition: color .15s, background-color .15s;
+}
+.nav__item:hover { color: var(--oat-soft-900); }
+.btn {
+  height: 40px; padding: 0 16px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+  white-space: nowrap; transition: background-color .15s;
+}
+.btn--light { background: var(--oat-soft-100); color: var(--oat-soft-950); }
+.btn--light:hover { background: var(--oat-soft-200); }
+.btn--dark { background: var(--oat-soft-950); color: var(--on-dark); }
+.btn--dark:hover { background: var(--oat-soft-800); }
+
+/* Баннер */
+.hero {
+  position: relative;
+  height: 456px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--oat-soft-800) url(data:image/webp;base64,{{HERO}}) center / cover no-repeat;
+}
+.hero__content {
+  position: absolute; left: 22px; bottom: 25px; right: 22px;
+  display: flex; flex-direction: column; gap: 18px; color: var(--on-dark);
+}
+.hero__title { margin: 0; max-width: 611px; }
+.hero__title em { font-style: normal; color: var(--yellow-accent); }
+.benefits { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 0; padding: 0; list-style: none; }
+.benefit { display: flex; align-items: center; gap: 12px; }
+.benefit__icon {
+  width: 32px; height: 32px; border-radius: 7px; display: grid; place-items: center;
+  background: rgba(246, 244, 242, .2);
+}
+
+/* Строка поиска */
+.search { display: flex; gap: 8px; position: relative; z-index: 5; }
+.field-wrap { position: relative; flex: 0 1 368px; min-width: 0; }
+.field {
+  width: 100%;
+  height: 80px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--radius-field);
+  background: var(--oat-soft-100);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: background-color .15s, box-shadow .15s;
+}
+.field:hover { background: var(--oat-soft-200); }
+.field[aria-expanded="true"] { background: var(--oat-soft-100); box-shadow: inset 0 0 0 1px var(--sage-300); }
+.field.is-error { box-shadow: inset 0 0 0 1px var(--red-error); }
+.field__content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.field__label { color: var(--oat-soft-900); }
+.field__text { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.field__text--placeholder { color: var(--oat-soft-600); }
+.field__text--value { color: var(--oat-soft-900); font-weight: 500; }
+.field.is-filled .field__label { color: var(--oat-soft-500); }
+.field__chevron { flex: none; width: 20px; height: 20px; transition: transform .2s; }
+.field[aria-expanded="true"] .field__chevron { transform: rotate(180deg); }
+
+.search__submit {
+  flex: 1 1 200px; min-width: 0; height: 80px; padding: 0 24px; border-radius: var(--radius-field);
+  background: var(--oat-soft-950); color: var(--oat-soft-50);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background-color .15s;
+}
+.search__submit:hover { background: var(--oat-soft-800); }
+
+/* Выпадашки: под полем с зазором 4, поверх страницы */
+.pop {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--base-white);
+  border-radius: 16px;
+  box-shadow: var(--shadow-pop);
+  z-index: 10;
+}
+
+/* Список городов */
+.cities { width: 368px; max-width: 100%; padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
+.cities__title { padding: 0 24px; color: var(--oat-soft-500); }
+.cities__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.city {
+  width: 100%; height: 40px; padding: 0 24px; display: flex; align-items: center;
+  color: var(--oat-soft-900);
+}
+.city:hover, .city:focus-visible, .city[aria-selected="true"] { background: var(--oat-soft-100); }
+.city:focus-visible { outline-offset: -2px; }
+
+/* Календарь: два месяца по 7 × 36 */
+.calendar { padding: 20px; width: max-content; max-width: calc(100vw - 32px); }
+.calendar__months { display: flex; gap: 24px; flex-wrap: wrap; }
+.month { width: 252px; display: flex; flex-direction: column; gap: 16px; }
+.month__header { display: flex; align-items: center; height: 36px; }
+.month__title { flex: 1; display: flex; justify-content: center; gap: 8px; white-space: nowrap; }
+.month__year { color: var(--oat-soft-400); }
+.month__spacer { width: 36px; height: 36px; flex: none; }
+.cal-nav {
+  width: 36px; height: 36px; flex: none; border-radius: 8px; display: grid; place-items: center;
+  background: var(--oat-soft-50); transition: background-color .15s;
+}
+.cal-nav:hover:not(:disabled) { background: var(--oat-soft-100); }
+.cal-nav:disabled { background: var(--oat-soft-100); opacity: .5; }
+.cal-nav--next svg { transform: scaleX(-1); }
+.weekdays { display: grid; grid-template-columns: repeat(7, 36px); color: var(--oat-soft-500); text-align: center; }
+.days { display: grid; grid-template-columns: repeat(7, 36px); row-gap: 4px; }
+.day { position: relative; width: 36px; height: 36px; }
+.day__band { position: absolute; inset: 0; background: var(--sage-50); display: none; }
+.day.is-in-range .day__band { display: block; }
+.day.is-start .day__band { display: block; left: 18px; }
+.day.is-end .day__band { display: block; right: 18px; }
+.day.is-start.is-end .day__band { display: none; }
+.day__btn {
+  position: relative; width: 36px; height: 36px; border-radius: 8px;
+  display: grid; place-items: center; color: var(--oat-soft-900);
+  font-variant-numeric: tabular-nums;
+  transition: background-color .12s, color .12s;
+}
+.day__btn:hover:not(:disabled) { background: var(--oat-soft-100); }
+.day__btn:disabled { color: var(--oat-soft-400); }
+.day.is-start .day__btn, .day.is-end .day__btn { background: var(--sage-500); color: var(--base-white); }
+/* Панель параметров: ширина 368, отступы 20 */
+.params { width: 368px; max-width: 100%; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.divider { height: 1px; background: var(--oat-soft-200); }
+.row { display: flex; align-items: center; gap: 12px; }
+.row > .t-overline { flex: 1; min-width: 0; }
+.counter { display: flex; align-items: center; gap: 8px; }
+.counter__value { width: 24px; text-align: center; font-variant-numeric: tabular-nums; }
+.step {
+  width: 36px; height: 36px; border-radius: 18px; display: grid; place-items: center;
+  background: var(--oat-soft-100); color: var(--oat-soft-900); transition: background-color .15s, color .15s;
+}
+.step:hover:not(:disabled) { background: var(--oat-soft-200); }
+.step:disabled { background: var(--oat-soft-50); color: var(--oat-soft-300); }
+.price { display: flex; flex-direction: column; gap: 12px; }
+.price__value { color: var(--oat-soft-600); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.slider { position: relative; height: 20px; touch-action: none; }
+.slider__track { position: absolute; left: 0; right: 0; top: 8px; height: 4px; border-radius: 2px; background: var(--oat-soft-200); }
+.slider__active { position: absolute; top: 6px; height: 8px; background: var(--oat-soft-200); }
+.knob {
+  position: absolute; top: 0; width: 20px; height: 20px; border-radius: 10px; margin-left: -10px;
+  background: var(--oat-soft-900); cursor: grab; transition: transform .12s;
+}
+.knob:hover, .knob.is-dragging { transform: scale(1.1); }
+.knob.is-dragging { cursor: grabbing; }
+.transmission { display: flex; flex-direction: column; gap: 8px; }
+.radio-group { display: flex; flex-direction: column; }
+.radio { height: 40px; display: flex; align-items: center; gap: 12px; width: 100%; }
+.radio__mark {
+  width: 20px; height: 20px; flex: none; border-radius: 10px; background: var(--base-white);
+  box-shadow: inset 0 0 0 1.5px var(--oat-soft-400); display: grid; place-items: center;
+  transition: box-shadow .12s;
+}
+.radio:hover .radio__mark { box-shadow: inset 0 0 0 1.5px var(--sage-500); }
+.radio[aria-checked="true"] .radio__mark { box-shadow: inset 0 0 0 2px var(--sage-600); }
+.radio[aria-checked="true"] .radio__mark::after { content: ""; width: 10px; height: 10px; border-radius: 5px; background: var(--sage-600); }
+.radio[aria-checked="true"]:hover .radio__mark { box-shadow: inset 0 0 0 2px var(--sage-700); }
+.radio[aria-checked="true"]:hover .radio__mark::after { background: var(--sage-700); }
+.params__submit {
+  height: 56px; border-radius: 12px; padding: 0 20px; background: var(--oat-soft-900); color: var(--base-white);
+  display: flex; align-items: center; justify-content: center; transition: background-color .15s;
+}
+.params__submit:hover { background: var(--oat-soft-800); }
+
+/* Плашка результата поиска */
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 50;
+  transform: translate(-50%, 16px); opacity: 0; pointer-events: none;
+  max-width: calc(100vw - 32px); padding: 14px 20px; border-radius: 12px;
+  background: var(--oat-soft-900); color: var(--on-dark);
+  transition: opacity .2s, transform .2s;
+}
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+/* Сужение: 1024–1440 поля тянутся, ниже 1024 строка поиска в столбик */
+@media (max-width: 1180px) {
+  .nav { display: none; }
+}
+@media (max-width: 1023px) {
+  :root { --gutter: 16px; }
+  .search { flex-direction: column; }
+  .field-wrap { flex: none; }
+  .search__submit { flex: none; }
+  .pop { left: 0; right: 0; }
+  .cities, .params { width: auto; }
+  .calendar { width: max-content; }
+  .hero { height: 456px; }
+  .t-headline-lg { font-size: 40px; line-height: 48px; }
+}
+@media (max-width: 640px) {
+  .location { display: none; }
+  .calendar { width: auto; }
+  .calendar__months { justify-content: center; }
+  .hero { height: 440px; }
+  .hero__content { left: 16px; right: 16px; bottom: 20px; }
+  .t-headline-lg { font-size: 32px; line-height: 40px; }
+  .t-body-lg { font-size: 17px; line-height: 24px; }
+}
+@media (max-width: 420px) {
+  .btn--light { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="header">
+    <div class="header__left">
+      <a class="logo" href="#" aria-label="WayKit, на главную">{{SVG_LOGO}}</a>
+      <button class="location t-label-md" type="button">{{SVG_LOCATION}}<span>Кемерово</span></button>
+    </div>
+    <div class="header__right">
+      <nav class="nav t-body-md" aria-label="Основное меню">
+        <a class="nav__item" href="#">Каталог</a>
+        <a class="nav__item" href="#">О нас</a>
+        <a class="nav__item" href="#">Условия</a>
+        <button class="nav__item" type="button">Поддержка {{SVG_CARET_NAV}}</button>
+      </nav>
+      <div class="auth t-button-md">
+        <button class="btn btn--light" type="button">Вход</button>
+        <button class="btn btn--dark" type="button">Регистрация</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" aria-label="Аренда авто в Сибири">
+    <div class="hero__content">
+      <h1 class="hero__title t-headline-lg">Подобрать авто<br> в аренду <em>в&nbsp;Сибири</em></h1>
+      <ul class="benefits t-body-lg">
+        <li class="benefit"><span class="benefit__icon">{{SVG_CHECK}}</span>Без суточного лимита по пробегу</li>
+        <li class="benefit"><span class="benefit__icon">{{SVG_CHECK}}</span>Доставка в удобное место</li>
+      </ul>
+    </div>
+  </section>
+
+  <form class="search" id="search" novalidate>
+    <div class="field-wrap" data-field="city">
+      <button class="field" id="field-city" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="pop-city">
+        <span class="field__content">
+          <span class="field__label t-overline">Город</span>
+          <span class="field__text t-body-md field__text--placeholder" data-role="text">Выберите из доступных</span>
+        </span>
+        <span class="field__chevron" aria-hidden="true">{{SVG_CARET_FIELD}}</span>
+      </button>
+      <div class="pop cities" id="pop-city" hidden>
+        <div class="cities__title t-overline" id="cities-title">Доступные города</div>
+        <ul class="cities__list" role="listbox" aria-labelledby="cities-title"></ul>
+      </div>
+    </div>
+
+    <div class="field-wrap" data-field="dates">
+      <button class="field" id="field-dates" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="pop-dates">
+        <span class="field__content">
+          <span class="field__label t-overline">Период аренды</span>
+          <span class="field__text t-body-md field__text--placeholder" data-role="text">Выберите даты</span>
+        </span>
+      </button>
+      <div class="pop calendar" id="pop-dates" role="dialog" aria-label="Выбор дат аренды" hidden>
+        <div class="calendar__months"></div>
+      </div>
+    </div>
+
+    <div class="field-wrap" data-field="params">
+      <button class="field" id="field-params" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="pop-params">
+        <span class="field__content">
+          <span class="field__label t-overline">Параметры</span>
+          <span class="field__text t-body-md field__text--placeholder" data-role="text">2 пассажира · любая к/п</span>
+        </span>
+        <span class="field__chevron" aria-hidden="true">{{SVG_CARET_FIELD}}</span>
+      </button>
+      <div class="pop params" id="pop-params" role="dialog" aria-label="Параметры поиска" hidden>
+        <div class="row">
+          <span class="t-overline" id="pass-label">Количество пассажиров</span>
+          <div class="counter" role="group" aria-labelledby="pass-label">
+            <button class="step" id="pass-minus" type="button" aria-label="Меньше пассажиров">{{SVG_MINUS}}</button>
+            <span class="counter__value t-body-md" id="pass-value" aria-live="polite">2</span>
+            <button class="step" id="pass-plus" type="button" aria-label="Больше пассажиров">{{SVG_PLUS}}</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="price">
+          <div class="row">
+            <span class="t-overline" id="price-label">Цена за сутки</span>
+            <span class="price__value t-body-md" id="price-value"></span>
+          </div>
+          <div class="slider" id="price-slider">
+            <div class="slider__track"></div>
+            <div class="slider__active"></div>
+            <div class="knob" role="slider" tabindex="0" data-knob="min" aria-label="Цена от"></div>
+            <div class="knob" role="slider" tabindex="0" data-knob="max" aria-label="Цена до"></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="transmission">
+          <span class="t-overline" id="trans-label">Коробка передач</span>
+          <div class="radio-group t-body-md" role="radiogroup" aria-labelledby="trans-label">
+            <button class="radio" type="button" role="radio" aria-checked="true" data-value="any"><span class="radio__mark"></span>Любая</button>
+            <button class="radio" type="button" role="radio" aria-checked="false" data-value="auto"><span class="radio__mark"></span>Автоматическая</button>
+            <button class="radio" type="button" role="radio" aria-checked="false" data-value="manual"><span class="radio__mark"></span>Механическая</button>
+          </div>
+        </div>
+        <button class="params__submit t-button-md" id="params-apply" type="button">Расширенный поиск</button>
+      </div>
+    </div>
+
+    <button class="search__submit t-button-lg" type="submit">{{SVG_SEARCH}}<span>Найти</span></button>
+  </form>
+  <p class="sr-only" id="search-status" aria-live="assertive"></p>
+</div>
+<div class="toast t-body-md" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const CITIES = ['Новосибирск', 'Томск', 'Кемерово', 'Новокузнецк'];
+  const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const PASS = { min: 1, max: 7, def: 2 };
+  const PRICE = { min: 1000, max: 30000, step: 500 };
+  const TRANS = { any: 'любая к/п', auto: 'автомат', manual: 'механика' };
+  const NAV_ICON = `{{SVG_NAV}}`;
+
+  const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const today = startOfDay(new Date());
+  const sameDay = (a, b) => a && b && a.getTime() === b.getTime();
+  const nbsp = n => n.toLocaleString('ru-RU').replace(/\s/g, ' ');
+  const plural = (n, one, few, many) => {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  };
+
+  const state = {
+    open: null,
+    city: null,
+    preview: null,
+    start: null,
+    end: null,
+    hover: null,
+    view: new Date(today.getFullYear(), today.getMonth(), 1),
+    passengers: PASS.def,
+    price: [PRICE.min, PRICE.max],
+    trans: 'any',
+    errors: new Set(),
+  };
+
+  const $ = s => document.querySelector(s);
+  const fields = {
+    city: { btn: $('#field-city'), pop: $('#pop-city') },
+    dates: { btn: $('#field-dates'), pop: $('#pop-dates') },
+    params: { btn: $('#field-params'), pop: $('#pop-params') },
+  };
+
+  /* ---------- Тексты полей ---------- */
+  function datesText() {
+    if (!state.start) return null;
+    const s = state.start, e = state.end;
+    if (!e) return `${s.getDate()} ${MONTHS_GEN[s.getMonth()]} –`;
+    if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) return `${s.getDate()} – ${e.getDate()} ${MONTHS_GEN[e.getMonth()]}`;
+    return `${s.getDate()} ${MONTHS_GEN[s.getMonth()]} – ${e.getDate()} ${MONTHS_GEN[e.getMonth()]}`;
+  }
+  const paramsChanged = () => state.passengers !== PASS.def || state.trans !== 'any' || state.price[0] !== PRICE.min || state.price[1] !== PRICE.max;
+  function priceText() {
+    const [lo, hi] = state.price;
+    if (lo === PRICE.min && hi === PRICE.max) return null;
+    if (lo === PRICE.min) return `до ${nbsp(hi)} ₽`;
+    if (hi === PRICE.max) return `от ${nbsp(lo)} ₽`;
+    return `${nbsp(lo)} – ${nbsp(hi)} ₽`;
+  }
+  function paramsText() {
+    const parts = [`${state.passengers} ${plural(state.passengers, 'пассажир', 'пассажира', 'пассажиров')}`, TRANS[state.trans]];
+    const p = priceText(); if (p) parts.push(p);
+    return parts.join(' · ');
+  }
+
+  function setField(key, value, filled) {
+    const btn = fields[key].btn;
+    const text = btn.querySelector('[data-role="text"]');
+    btn.classList.toggle('is-filled', !!filled);
+    text.classList.toggle('field__text--placeholder', !filled);
+    text.classList.toggle('field__text--value', !!filled);
+    text.textContent = value;
+    btn.classList.toggle('is-error', state.errors.has(key));
+  }
+  function renderFields() {
+    const cityShown = state.preview || state.city;
+    setField('city', cityShown || 'Выберите из доступных', !!cityShown);
+    const dt = datesText();
+    setField('dates', dt || 'Выберите даты', !!dt);
+    setField('params', paramsText(), paramsChanged());
+  }
+
+  /* ---------- Открытие и закрытие ---------- */
+  function open(key) {
+    if (state.open && state.open !== key) close(false);
+    state.open = key;
+    state.errors.delete(key);
+    const f = fields[key];
+    f.btn.setAttribute('aria-expanded', 'true');
+    f.pop.hidden = false;
+    if (key === 'dates') {
+      if (state.start) state.view = new Date(state.start.getFullYear(), state.start.getMonth(), 1);
+      renderCalendar();
+    }
+    if (key === 'city') renderCities();
+    if (key === 'params') renderParams();
+    renderFields();
+    revealPop(f.pop);
+  }
+  /* Если выпадашка не помещается в окно, докручиваем страницу */
+  function revealPop(pop) {
+    requestAnimationFrame(() => {
+      const r = pop.getBoundingClientRect();
+      const overflow = r.bottom + 16 - window.innerHeight;
+      if (overflow <= 0) return;
+      const field = pop.parentElement.getBoundingClientRect();
+      const delta = Math.min(overflow, Math.max(0, field.top - 16));
+      const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollBy({ top: delta, behavior: smooth ? 'smooth' : 'auto' });
+    });
+  }
+  function close(focusField = true) {
+    const key = state.open; if (!key) return;
+    const f = fields[key];
+    f.btn.setAttribute('aria-expanded', 'false');
+    f.pop.hidden = true;
+    state.open = null;
+    state.preview = null;
+    if (key === 'dates' && state.start && !state.end) { state.start = null; }
+    state.hover = null;
+    renderFields();
+    if (focusField) f.btn.focus({ preventScroll: true });
+  }
+  Object.entries(fields).forEach(([key, f]) => {
+    f.btn.addEventListener('click', () => state.open === key ? close() : open(key));
+  });
+  document.addEventListener('pointerdown', e => {
+    if (state.open && !e.target.closest('.field-wrap')) close(false);
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.open) close(); });
+
+  /* ---------- Город ---------- */
+  const cityList = $('#pop-city .cities__list');
+  function renderCities() {
+    cityList.innerHTML = '';
+    CITIES.forEach(name => {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'city t-label-lg'; b.textContent = name;
+      b.setAttribute('role', 'option');
+      b.setAttribute('aria-selected', String(name === state.city));
+      b.addEventListener('pointerenter', () => { state.preview = name; renderFields(); });
+      b.addEventListener('focus', () => { state.preview = name; renderFields(); });
+      b.addEventListener('click', () => {
+        state.city = name; state.preview = null; state.errors.delete('city');
+        close(false);
+        if (!state.end) open('dates'); else fields.city.btn.focus({ preventScroll: true });
+      });
+      li.appendChild(b); cityList.appendChild(li);
+    });
+    cityList.onpointerleave = () => { state.preview = null; renderFields(); };
+  }
+
+  /* ---------- Календарь ---------- */
+  const monthsEl = $('#pop-dates .calendar__months');
+  function inRange(d) {
+    const s = state.start, e = state.end || (state.hover && state.start && state.hover > state.start ? state.hover : null);
+    return { s, e, isStart: sameDay(d, s), isEnd: e && sameDay(d, e), inside: s && e && d > s && d < e };
+  }
+  function renderCalendar() {
+    monthsEl.innerHTML = '';
+    const minView = new Date(today.getFullYear(), today.getMonth(), 1);
+    [0, 1].forEach(offset => {
+      const first = new Date(state.view.getFullYear(), state.view.getMonth() + offset, 1);
+      const month = document.createElement('div'); month.className = 'month';
+      const head = document.createElement('div'); head.className = 'month__header';
+      const title = document.createElement('div'); title.className = 'month__title t-title-sm';
+      title.innerHTML = `<span>${MONTHS[first.getMonth()]}</span><span class="month__year">${first.getFullYear()}</span>`;
+      const nav = document.createElement('button');
+      nav.type = 'button';
+      nav.className = 'cal-nav ' + (offset === 0 ? 'cal-nav--prev' : 'cal-nav--next');
+      nav.innerHTML = NAV_ICON;
+      nav.setAttribute('aria-label', offset === 0 ? 'Предыдущий месяц' : 'Следующий месяц');
+      if (offset === 0 && state.view <= minView) nav.disabled = true;
+      nav.addEventListener('click', () => {
+        state.view = new Date(state.view.getFullYear(), state.view.getMonth() + (offset === 0 ? -1 : 1), 1);
+        renderCalendar();
+        monthsEl.querySelector(offset === 0 ? '.cal-nav--prev' : '.cal-nav--next')?.focus();
+      });
+      const spacer = document.createElement('span'); spacer.className = 'month__spacer';
+      if (offset === 0) head.append(nav, title, spacer); else head.append(spacer, title, nav);
+
+      const wd = document.createElement('div'); wd.className = 'weekdays t-body-sm'; wd.setAttribute('aria-hidden', 'true');
+      wd.innerHTML = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d => `<span>${d}</span>`).join('');
+
+      const grid = document.createElement('div'); grid.className = 'days t-body-sm';
+      const lead = (first.getDay() + 6) % 7;
+      const count = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+      for (let i = 0; i < 42; i++) {
+        const cell = document.createElement('div'); cell.className = 'day';
+        const n = i - lead + 1;
+        if (n >= 1 && n <= count) {
+          const d = new Date(first.getFullYear(), first.getMonth(), n);
+          const r = inRange(d);
+          cell.innerHTML = '<span class="day__band"></span>';
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'day__btn'; b.textContent = n;
+          b.setAttribute('aria-label', `${n} ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`);
+          if (d < today) b.disabled = true;
+          if (sameDay(d, today)) cell.classList.add('is-today');
+          if (r.isStart) cell.classList.add('is-start');
+          if (r.isEnd) cell.classList.add('is-end');
+          if (r.inside) cell.classList.add('is-in-range');
+          if (r.isStart || r.isEnd) b.setAttribute('aria-pressed', 'true');
+          b.addEventListener('click', () => pickDate(d));
+          b.addEventListener('pointerenter', () => { if (state.start && !state.end) { state.hover = d; paintRange(); } });
+          cell.appendChild(b);
+        }
+        grid.appendChild(cell);
+      }
+      month.append(head, wd, grid);
+      monthsEl.appendChild(month);
+    });
+  }
+  function paintRange() {
+    monthsEl.querySelectorAll('.day__btn').forEach(b => {
+      const [n, mg, y] = b.getAttribute('aria-label').split(' ');
+      const d = new Date(+y, MONTHS_GEN.indexOf(mg), +n);
+      const r = inRange(d), cell = b.parentElement;
+      cell.classList.toggle('is-start', !!r.isStart);
+      cell.classList.toggle('is-end', !!r.isEnd);
+      cell.classList.toggle('is-in-range', !!r.inside);
+    });
+  }
+  function pickDate(d) {
+    if (!state.start || state.end || d <= state.start) {
+      state.start = d; state.end = null; state.hover = null;
+      renderCalendar(); renderFields();
+      return;
+    }
+    state.end = d; state.hover = null; state.errors.delete('dates');
+    renderFields();
+    close();
+  }
+
+  /* ---------- Параметры ---------- */
+  const passValue = $('#pass-value'), passMinus = $('#pass-minus'), passPlus = $('#pass-plus');
+  const slider = $('#price-slider'), active = slider.querySelector('.slider__active'), knobs = slider.querySelectorAll('.knob');
+  const priceValue = $('#price-value');
+  function renderParams() {
+    passValue.textContent = state.passengers;
+    passMinus.disabled = state.passengers <= PASS.min;
+    passPlus.disabled = state.passengers >= PASS.max;
+    const pct = v => (v - PRICE.min) / (PRICE.max - PRICE.min);
+    const w = slider.clientWidth - 20;
+    const [lo, hi] = state.price;
+    knobs[0].style.left = `${10 + pct(lo) * w}px`;
+    knobs[1].style.left = `${10 + pct(hi) * w}px`;
+    active.style.left = `${10 + pct(lo) * w}px`;
+    active.style.width = `${(pct(hi) - pct(lo)) * w}px`;
+    knobs[0].setAttribute('aria-valuemin', PRICE.min); knobs[0].setAttribute('aria-valuemax', hi); knobs[0].setAttribute('aria-valuenow', lo);
+    knobs[1].setAttribute('aria-valuemin', lo); knobs[1].setAttribute('aria-valuemax', PRICE.max); knobs[1].setAttribute('aria-valuenow', hi);
+    knobs[0].setAttribute('aria-valuetext', `${nbsp(lo)} ₽`); knobs[1].setAttribute('aria-valuetext', `${nbsp(hi)} ₽`);
+    priceValue.textContent = `${nbsp(lo)} – ${nbsp(hi)} ₽`;
+    document.querySelectorAll('.radio').forEach(r => r.setAttribute('aria-checked', String(r.dataset.value === state.trans)));
+    renderFields();
+  }
+  passMinus.addEventListener('click', () => { state.passengers = Math.max(PASS.min, state.passengers - 1); renderParams(); });
+  passPlus.addEventListener('click', () => { state.passengers = Math.min(PASS.max, state.passengers + 1); renderParams(); });
+  document.querySelectorAll('.radio').forEach(r => r.addEventListener('click', () => { state.trans = r.dataset.value; renderParams(); }));
+
+  const clampStep = v => Math.round(Math.min(PRICE.max, Math.max(PRICE.min, v)) / PRICE.step) * PRICE.step;
+  function setKnob(which, v) {
+    v = clampStep(v);
+    if (which === 0) state.price[0] = Math.min(v, state.price[1] - PRICE.step);
+    else state.price[1] = Math.max(v, state.price[0] + PRICE.step);
+    renderParams();
+  }
+  function valueAt(clientX) {
+    const r = slider.getBoundingClientRect();
+    const t = (clientX - r.left - 10) / (r.width - 20);
+    return PRICE.min + Math.min(1, Math.max(0, t)) * (PRICE.max - PRICE.min);
+  }
+  let drag = null;
+  slider.addEventListener('pointerdown', e => {
+    const v = valueAt(e.clientX);
+    const which = e.target.dataset.knob ? (e.target.dataset.knob === 'min' ? 0 : 1)
+      : (Math.abs(v - state.price[0]) <= Math.abs(v - state.price[1]) ? 0 : 1);
+    drag = which; knobs[which].classList.add('is-dragging'); knobs[which].focus({ preventScroll: true });
+    slider.setPointerCapture(e.pointerId);
+    setKnob(which, v);
+  });
+  slider.addEventListener('pointermove', e => { if (drag !== null) setKnob(drag, valueAt(e.clientX)); });
+  const endDrag = () => { if (drag !== null) knobs[drag].classList.remove('is-dragging'); drag = null; };
+  slider.addEventListener('pointerup', endDrag);
+  slider.addEventListener('pointercancel', endDrag);
+  knobs.forEach((k, i) => k.addEventListener('keydown', e => {
+    const delta = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -4, PageUp: 4 }[e.key];
+    if (delta) { e.preventDefault(); setKnob(i, state.price[i] + delta * PRICE.step); }
+    if (e.key === 'Home') { e.preventDefault(); setKnob(i, PRICE.min); }
+    if (e.key === 'End') { e.preventDefault(); setKnob(i, PRICE.max); }
+  }));
+  $('#params-apply').addEventListener('click', () => close());
+
+  /* ---------- Поиск ---------- */
+  const toast = $('#toast'), status = $('#search-status');
+  let toastTimer;
+  function showToast(text) {
+    toast.textContent = text; toast.classList.add('is-visible');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 4000);
+  }
+  $('#search').addEventListener('submit', e => {
+    e.preventDefault();
+    close(false);
+    const anyFilled = state.city || state.end || paramsChanged();
+    if (!anyFilled) {
+      state.errors = new Set(['city', 'dates']);
+      renderFields();
+      status.textContent = 'Выберите город или даты аренды, чтобы начать поиск';
+      return;
+    }
+    state.errors.clear(); renderFields();
+    const parts = [state.city, state.end && datesText(), paramsText()].filter(Boolean);
+    const msg = `Ищем авто: ${parts.join(' · ')}`;
+    status.textContent = msg; showToast(msg);
+  });
+
+  window.addEventListener('resize', () => { if (state.open === 'params') renderParams(); });
+  renderFields();
+})();
+</script>
+</body>
+</html>
