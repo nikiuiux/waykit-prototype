@@ -187,10 +187,10 @@ img, svg { display: block; max-width: 100%; }
 }
 .search__submit:hover { background: var(--oat-soft-800); }
 
-/* Выпадашки: под полем с зазором 4, поверх страницы */
+/* Выпадашки: под полем с зазором 8, поверх страницы */
 .pop {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 8px);
   left: 0;
   background: var(--base-white);
   border-radius: 16px;
@@ -742,11 +742,13 @@ img, svg { display: block; max-width: 100%; }
   $('#search').addEventListener('submit', e => {
     e.preventDefault();
     close(false);
-    const anyFilled = state.city || state.end || paramsChanged();
-    if (!anyFilled) {
-      state.errors = new Set(['city', 'dates']);
+    const missing = [];
+    if (!state.city) missing.push('city');
+    if (!state.end) missing.push('dates');
+    if (missing.length) {
+      state.errors = new Set(missing);
       renderFields();
-      status.textContent = 'Выберите город или даты аренды, чтобы начать поиск';
+      status.textContent = missing.length === 2 ? 'Выберите город и даты аренды' : missing[0] === 'city' ? 'Выберите город' : 'Выберите даты аренды';
       return;
     }
     state.errors.clear(); renderFields();
