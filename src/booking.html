@@ -1,0 +1,618 @@
+<title>Бронирование WayKit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+@font-face { font-family: "PT Root UI VF"; src: url(data:font/woff2;base64,{{FONT}}) format("woff2"); font-weight: 300 700; font-display: swap; }
+@font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_CYR}}) format("woff2"); font-weight: 600; font-display: swap; unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_LAT}}) format("woff2"); font-weight: 600; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+/* Макет WayKit: шапка, слева шаги брони (912), справа детали брони (456). Токены названы как переменные в Фигме. Одна светлая тема, как в продукте. */
+:root {
+  color-scheme: light;
+  --white: #ffffff;
+  --c50: #f5f4f2; --c100: #e8e7e5; --c200: #dcdbd7; --c300: #c8c6c2; --c400: #a8a6a1;
+  --c500: #83827d; --c600: #62605b; --c800: #3a3936; --c900: #262623;
+  --sage-50: #edf2ed; --sage-100: #dfe7e0; --sage-300: #b7c7b9; --sage-500: #738776; --sage-600: #526456;
+  --yellow: #f7fe94; --red: #b9473a; --on-dark: #f6f4f2;
+  --font-ui: "PT Root UI VF", "PT Root UI", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Onest", "PT Root UI VF", system-ui, sans-serif;
+  --ease: cubic-bezier(.22,.8,.24,1);
+  --shadow-doc: drop-shadow(0 4px 8px rgba(183,199,185,.45));
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--c50); color: var(--c900); font-family: var(--font-ui); font-size: 17px; line-height: 26px; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: inherit; }
+button:disabled { cursor: default; }
+input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sage-500); outline-offset: 2px; }
+img, svg { display: block; max-width: 100%; }
+.t-title { font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 36px; margin: 0; text-wrap: balance; }
+.t-h { font-size: 17px; line-height: 26px; font-weight: 500; margin: 0; }
+.t-sm { font-size: 15px; line-height: 24px; }
+.t-xs { font-size: 13px; line-height: 18px; }
+.muted { color: var(--c600); }
+.link { font-size: 15px; line-height: 24px; font-weight: 500; color: var(--c600); text-decoration: underline; text-underline-offset: 3px; }
+.link:hover { color: var(--c900); }
+.gx { padding-left: max(36px, env(safe-area-inset-left, 0px)); padding-right: max(36px, env(safe-area-inset-right, 0px)); }
+
+/* Шапка */
+.header { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--c200); }
+.header__left, .header__right, .nav, .auth { display: flex; align-items: center; }
+.header__left { gap: 24px; } .header__right { gap: 24px; } .nav { gap: 4px; } .auth { gap: 8px; }
+.location { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+.nav a { height: 40px; padding: 0 12px; display: flex; align-items: center; color: var(--c600); text-decoration: none; border-radius: 12px; }
+.btn { height: 40px; padding: 0 16px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; transition: background-color .15s, color .15s; }
+.btn--light { background: var(--c100); } .btn--light:hover { background: var(--c200); }
+.btn--dark { background: var(--c900); color: var(--on-dark); } .btn--dark:hover { background: var(--c800); }
+.account { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 500; animation: fadeIn .5s var(--ease); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--sage-100); color: var(--sage-600); display: grid; place-items: center; font-size: 15px; font-weight: 600; }
+.sub { height: 56px; display: flex; align-items: center; border-bottom: 1px solid var(--c200); }
+.back { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--c900); text-decoration: none; }
+
+/* Раскладка */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 456px; max-width: 1440px; margin: 0 auto; }
+.flow, .booking { padding: 36px 36px 64px 0; min-width: 0; }
+.details { border-left: 1px solid var(--c200); padding: 36px 0 36px 36px; }
+.details__inner { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 24px; }
+
+/* Шаги */
+.steps { list-style: none; margin: 16px 0 0; padding: 0; }
+.step { border-bottom: 1px solid var(--c200); padding: 24px 0; scroll-margin-top: 16px; }
+.step__head { display: flex; align-items: flex-start; gap: 12px; }
+.badge { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; font-weight: 500; margin-top: 3px; transition: background-color .35s var(--ease), color .35s var(--ease); }
+.badge svg { display: none; }
+.step__titles { flex: 1; min-width: 0; }
+.step__title { font-size: 20px; line-height: 28px; transition: color .3s; }
+.step__desc { font-size: 15px; line-height: 24px; color: var(--c600); transition: color .3s; }
+.step__aside { flex: none; display: flex; align-items: center; gap: 8px; }
+.step[data-state="locked"] .badge { background: var(--c100); color: var(--c400); }
+.step[data-state="locked"] .step__title, .step[data-state="locked"] .step__desc { color: var(--c400); }
+.step[data-state="current"] .badge { background: var(--c900); color: var(--on-dark); }
+.step[data-state="done"] .badge { background: var(--sage-600); }
+.step[data-state="done"] .badge span { display: none; }
+.step[data-state="done"] .badge svg { display: block; animation: pop .45s var(--ease); }
+.step[data-state="pending"] .badge { background: var(--yellow); color: var(--c900); }
+.pending-note { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--c600); }
+.small-btn { height: 32px; padding: 0 12px; border-radius: 10px; background: var(--c100); font-size: 13px; font-weight: 500; }
+.small-btn:hover { background: var(--c200); }
+.primary { height: 48px; padding: 0 24px; border-radius: 12px; background: var(--c900); color: var(--on-dark); font-size: 17px; font-weight: 500; display: inline-flex; align-items: center; gap: 10px; transition: background-color .2s, color .2s, transform .15s; }
+.primary:hover:not(:disabled) { background: var(--c800); }
+.primary:active:not(:disabled) { transform: scale(.98); }
+.primary:disabled { background: var(--c200); color: var(--c500); }
+.pill { height: 40px; padding: 0 16px; border-radius: 999px; background: var(--c200); font-size: 15px; font-weight: 500; display: inline-flex; align-items: center; }
+.pill:hover { background: var(--c300); }
+
+/* Раскрытие шага */
+.collapse { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .55s var(--ease), opacity .4s var(--ease); }
+.collapse.open { grid-template-rows: 1fr; opacity: 1; }
+.collapse > .collapse__inner { overflow: hidden; min-height: 0; }
+.step__content { padding: 24px 0 8px 40px; display: flex; flex-direction: column; gap: 32px; }
+
+/* Документы */
+.group { display: flex; flex-direction: column; gap: 12px; }
+.group__label { font-size: 15px; font-weight: 500; color: var(--c600); }
+.slots { display: grid; grid-template-columns: repeat(2, 240px); gap: 24px; }
+.slot { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tile { position: relative; width: 100%; aspect-ratio: 240 / 136; border-radius: 12px; background: var(--c100); outline: 1px dashed var(--c400); outline-offset: -1px; overflow: visible; transition: outline-color .2s, background-color .2s; }
+.tile:hover { background: var(--c200); }
+.tile__clip { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; display: grid; place-items: center; }
+.tile__art { width: 120px; filter: var(--shadow-doc); transition: opacity .35s var(--ease), transform .45s var(--ease); }
+.tile__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.04); transition: opacity .45s var(--ease), transform .7s var(--ease); }
+.tile__veil { position: absolute; inset: 0; background: rgba(245,244,242,.62); display: grid; place-items: center; opacity: 0; transition: opacity .35s var(--ease); }
+.tile__bar { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 4px; border-radius: 2px; background: rgba(38,38,35,.12); overflow: hidden; opacity: 0; transition: opacity .2s; }
+.tile__bar i { display: block; height: 100%; width: 0; background: var(--sage-600); border-radius: 2px; }
+.tile__x { position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%; background: var(--white); box-shadow: 0 2px 6px rgba(183,199,185,.6); display: grid; place-items: center; opacity: 0; transform: scale(.6); pointer-events: none; transition: opacity .25s, transform .3s var(--ease); z-index: 2; }
+.tile__x:hover { background: var(--c100); }
+.slot[data-s="uploading"] .tile, .slot[data-s="recognizing"] .tile, .slot[data-s="done"] .tile { outline-color: transparent; }
+.slot[data-s="uploading"] .tile__art, .slot[data-s="recognizing"] .tile__art, .slot[data-s="done"] .tile__art { opacity: 0; transform: scale(.9); }
+.slot[data-s="uploading"] .tile__photo, .slot[data-s="recognizing"] .tile__photo, .slot[data-s="done"] .tile__photo { opacity: 1; transform: scale(1); }
+.slot[data-s="uploading"] .tile__veil, .slot[data-s="recognizing"] .tile__veil { opacity: 1; }
+.slot[data-s="uploading"] .tile__bar { opacity: 1; }
+.slot[data-s="uploading"] .tile__bar i { width: 100%; transition: width 1s cubic-bezier(.3,.6,.4,1); }
+.slot[data-s="recognizing"] .spinner { opacity: 1; }
+.slot[data-s="uploading"] .tile__x, .slot[data-s="recognizing"] .tile__x, .slot[data-s="done"] .tile__x { opacity: 1; transform: scale(1); pointer-events: auto; }
+.slot__cap { display: flex; flex-direction: column; gap: 2px; }
+.slot__name { font-size: 15px; font-weight: 500; line-height: 24px; }
+.slot__status { font-size: 15px; line-height: 24px; color: var(--c600); }
+.spinner { width: 22px; height: 22px; opacity: 0; transition: opacity .2s; animation: spin 1s steps(8) infinite; }
+.spinner--on { opacity: 1; }
+.data { display: flex; flex-direction: column; gap: 24px; }
+.fields { display: flex; flex-direction: column; gap: 12px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.row--1 { grid-template-columns: 1fr; }
+.field { display: flex; flex-direction: column; gap: 6px; opacity: 0; transform: translateY(6px); transition: opacity .4s var(--ease), transform .5s var(--ease); }
+.field.in { opacity: 1; transform: none; }
+.field__box { background: var(--c200); border-radius: 12px; padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .2s; }
+.field__box:focus-within { box-shadow: inset 0 0 0 1px var(--sage-300); }
+.field label { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--c600); }
+.field input { border: 0; background: transparent; padding: 0; font-size: 17px; line-height: 26px; outline: none; width: 100%; }
+.field.err .field__box { box-shadow: inset 0 0 0 1px var(--red); }
+.field__err { font-size: 15px; color: var(--red); display: none; }
+.field.err .field__err { display: block; }
+.placeholder { display: flex; align-items: center; gap: 12px; background: var(--c100); border-radius: 12px; padding: 20px 16px; font-size: 15px; color: var(--c600); }
+.submit { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+/* Условия, оплата */
+.doc-card { display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 16px; background: var(--white); border: 1px solid var(--c200); }
+.doc-card__text { flex: 1; min-width: 0; }
+.terms { display: flex; flex-direction: column; }
+.terms__row { display: grid; grid-template-columns: 200px 1fr; gap: 24px; padding: 12px 0; border-bottom: 1px solid var(--c200); font-size: 15px; line-height: 24px; }
+.terms__row dt { color: var(--c600); } .terms__row dd { margin: 0; }
+.box { border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.box--sage { background: var(--sage-50); }
+.box--grey { background: var(--c100); border-radius: 12px; }
+.bullets { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; line-height: 24px; }
+
+/* Детали брони */
+.car { display: flex; gap: 16px; align-items: center; }
+.car img { width: 96px; height: 72px; border-radius: 8px; object-fit: cover; }
+.car__name { font-size: 17px; }
+.det-block { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.det-line { font-size: 17px; line-height: 26px; } .det-line span { color: var(--c500); }
+.cost { border-top: 1px solid var(--c200); padding-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+.cost__row { display: flex; justify-content: space-between; gap: 16px; font-variant-numeric: tabular-nums; }
+.cost__row--total { font-weight: 500; } .cost__row--total b { font-size: 20px; }
+.cost__row--minor { font-size: 15px; color: var(--c600); }
+.green { color: #3f8a4a; }
+.reveal { animation: rise .5s var(--ease) both; }
+
+/* Окно входа */
+.overlay { position: fixed; inset: 0; background: rgba(38,38,35,.32); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); opacity: 0; transition: opacity .3s var(--ease); z-index: 20; }
+.overlay.show { opacity: 1; }
+.dialog { position: relative; width: 440px; max-width: 100%; background: var(--c50); border-radius: 16px; padding: 36px; transform: translateY(12px) scale(.97); transition: transform .45s var(--ease); }
+.overlay.show .dialog { transform: none; }
+.dialog__close { position: absolute; top: 28px; right: 28px; width: 40px; height: 40px; border-radius: 10px; background: var(--c100); display: grid; place-items: center; }
+.view { display: flex; flex-direction: column; gap: 24px; animation: viewIn .4s var(--ease); }
+.view h2 { font-size: 28px; line-height: 32px; font-weight: 500; margin: 0; padding-right: 48px; }
+.big-field { height: 80px; border-radius: 16px; background: var(--c200); padding: 0 20px; display: flex; align-items: center; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .2s; }
+.big-field:focus-within { box-shadow: inset 0 0 0 1px var(--sage-300); }
+.big-field.err { box-shadow: inset 0 0 0 1px var(--red); }
+.big-field input { border: 0; background: transparent; outline: none; width: 100%; font-size: 20px; }
+.big-btn { height: 80px; border-radius: 16px; width: 100%; justify-content: center; font-size: 20px; }
+.err-text { color: var(--red); font-size: 15px; margin-top: -16px; }
+.code { display: grid; grid-template-columns: repeat(4, 64px); gap: 12px; }
+.code input { height: 80px; border: 0; border-radius: 16px; background: var(--c200); text-align: center; font-size: 28px; outline: none; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .2s; }
+.code input:focus { box-shadow: inset 0 0 0 1px var(--sage-300); }
+.success-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--c900); display: grid; place-items: center; margin: 8px auto 0; animation: pop .5s var(--ease); }
+.center { text-align: center; }
+
+/* Переход на банк */
+.bank { position: fixed; inset: 0; background: var(--c50); display: grid; place-items: center; z-index: 30; opacity: 0; transition: opacity .35s var(--ease); }
+.bank.show { opacity: 1; }
+.bank__card { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; padding: 16px; }
+
+/* Сводка брони */
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; background: var(--sage-100); color: var(--sage-600); font-size: 15px; font-weight: 500; }
+.banner { display: flex; gap: 16px; padding: 20px; border-radius: 16px; background: var(--sage-50); }
+.check-c { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--sage-500); display: grid; place-items: center; }
+.lines { display: flex; flex-direction: column; }
+.line { display: grid; grid-template-columns: 200px 1fr auto; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--c200); font-size: 15px; }
+.line > :first-child { color: var(--c600); }
+
+/* Тост */
+.toast { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px); background: var(--c900); color: var(--on-dark); padding: 12px 18px; border-radius: 12px; font-size: 15px; display: flex; align-items: center; gap: 10px; opacity: 0; pointer-events: none; transition: opacity .3s, transform .4s var(--ease); z-index: 40; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.foot { padding-block: 24px 48px; text-align: center; }
+.restart { font-size: 13px; color: var(--c500); text-decoration: underline; text-underline-offset: 3px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+@keyframes viewIn { from { opacity: 0; transform: translateX(14px); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .flow, .booking { padding-right: 0; }
+  .details { border-left: 0; border-top: 1px solid var(--c200); padding: 24px 0 36px; }
+  .nav { display: none; }
+}
+@media (max-width: 640px) {
+  .gx { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .header__left .location, .auth .btn--light { display: none; }
+  .step__content { padding-left: 0; }
+  .slots { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row { grid-template-columns: 1fr; }
+  .terms__row, .line { grid-template-columns: 1fr; gap: 2px; }
+  .step__head { flex-wrap: wrap; }
+  .step__aside:not(:empty) { width: 100%; padding-left: 40px; }
+  .step__aside .small-btn { display: none; }
+  .dialog { padding: 24px; } .dialog__close { top: 16px; right: 16px; }
+  .code { grid-template-columns: repeat(4, 1fr); }
+  .t-title { font-size: 24px; line-height: 32px; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.3 6.6 11.2 12.5 5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 16 16"><path d="M4.5 4.5l7 7m0-7-7 7" fill="none" stroke="#262623" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-spin" viewBox="0 0 24 24"><g stroke="#262623" stroke-width="2.2" stroke-linecap="round"><path d="M12 2.5v4" opacity="1"/><path d="M18.7 5.3l-2.8 2.8" opacity=".9"/><path d="M21.5 12h-4" opacity=".8"/><path d="M18.7 18.7l-2.8-2.8" opacity=".7"/><path d="M12 21.5v-4" opacity=".6"/><path d="M5.3 18.7l2.8-2.8" opacity=".5"/><path d="M2.5 12h4" opacity=".4"/><path d="M5.3 5.3l2.8 2.8" opacity=".3"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="header gx">
+    <div class="header__left">
+      <a class="logo" href="#" aria-label="WayKit">{{SVG_LOGO}}</a>
+      <span class="location">{{SVG_LOCATION}} Кемерово</span>
+    </div>
+    <div class="header__right">
+      <nav class="nav" aria-label="Разделы"><a href="#">Каталог</a><a href="#">О нас</a><a href="#">Условия</a><a href="#">Поддержка</a></nav>
+      <div class="auth" id="auth-guest"><button class="btn btn--light" type="button">Вход</button><button class="btn btn--dark" type="button">Регистрация</button></div>
+      <div class="account" id="auth-user" hidden><span class="avatar" id="avatar">МИ</span><span id="acc-name">Мой аккаунт</span></div>
+    </div>
+  </header>
+  <div class="sub gx"><a class="back" href="#" id="back"><svg width="8" height="10" viewBox="0 0 8 10" aria-hidden="true"><path d="M7 1 2 5l5 4z" fill="#262623"/></svg><span id="back-text">Вернуться к карточке машины</span></a></div>
+
+  <main class="layout gx">
+    <section class="flow" id="flow" aria-labelledby="flow-title">
+      <h1 class="t-title" id="flow-title">Бронирование и оплата</h1>
+      <ol class="steps">
+        <li class="step" id="s1" data-state="current">
+          <div class="step__head">
+            <span class="badge"><span>1</span><svg width="16" height="16"><use href="#i-check"/></svg></span>
+            <div class="step__titles"><div class="step__title">Вход или регистрация</div><div class="step__desc" id="s1-desc">Войдите по номеру телефона. Если вы у нас впервые, аккаунт создастся сам</div></div>
+            <div class="step__aside" id="s1-aside"><button class="primary" type="button" id="open-login">Продолжить</button></div>
+          </div>
+        </li>
+
+        <li class="step" id="s2" data-state="locked">
+          <div class="step__head">
+            <span class="badge"><span>2</span><svg width="16" height="16"><use href="#i-check"/></svg></span>
+            <div class="step__titles"><div class="step__title">Документы</div><div class="step__desc" id="s2-desc">Откроется после входа</div></div>
+            <div class="step__aside" id="s2-aside"></div>
+          </div>
+          <div class="collapse" id="s2-body"><div class="collapse__inner"><div class="step__content">
+            <div class="group" style="gap:4px">
+              <h3 class="t-h">Загрузите документы</h3>
+              <div class="t-sm muted">Фото без бликов, все поля читаются. JPG, PNG или PDF</div>
+            </div>
+            <div class="group"><div class="group__label">Паспорт</div><div class="slots" id="slots-passport"></div></div>
+            <div class="group"><div class="group__label">Водительское удостоверение</div><div class="slots" id="slots-license"></div></div>
+            <div><button class="link" type="button" id="manual">Ввести данные вручную</button></div>
+
+            <div class="collapse" id="data-wrap"><div class="collapse__inner"><div class="data" style="padding-top:8px">
+              <div class="group" style="gap:4px"><h3 class="t-h">Данные из документов</h3><div class="t-sm muted">Проверьте, они попадут в договор</div></div>
+              <div class="fields" id="f-passport"></div>
+              <div id="lic-zone"></div>
+              <div class="submit"><button class="primary" type="button" id="submit-docs" disabled>Всё верно, отправить на проверку</button><span class="t-sm muted" id="submit-hint"></span></div>
+            </div></div></div>
+          </div></div></div>
+        </li>
+
+        <li class="step" id="s3" data-state="locked">
+          <div class="step__head">
+            <span class="badge"><span>3</span><svg width="16" height="16"><use href="#i-check"/></svg></span>
+            <div class="step__titles"><div class="step__title">Условия и договор</div><div class="step__desc" id="s3-desc"></div></div>
+            <div class="step__aside" id="s3-aside"></div>
+          </div>
+          <div class="collapse" id="s3-body"><div class="collapse__inner"><div class="step__content">
+            <div class="doc-card">
+              <svg width="40" height="52" viewBox="0 0 40 52" style="filter:var(--shadow-doc)" aria-hidden="true"><rect x="2.5" y="1.5" width="35" height="49" rx="4" fill="#fff" stroke="#dcdbd7"/><rect x="8" y="8" width="18" height="3" rx="1.5" fill="#262623"/><g fill="#dcdbd7"><rect x="8" y="15" width="24" height="3" rx="1.5"/><rect x="8" y="20" width="20" height="3" rx="1.5"/><rect x="8" y="25" width="24" height="3" rx="1.5"/><rect x="8" y="30" width="16" height="3" rx="1.5"/></g><path d="M14 43c3-6 5 3 9-2 3-4 5 3 9-3" fill="none" stroke="#738776" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <div class="doc-card__text"><div class="t-sm" style="font-weight:500">Договор аренды CHERY TIGGO 7 PRO MAX</div><div class="t-sm muted">PDF · ваши данные и детали брони уже в договоре</div></div>
+              <button class="pill" type="button" data-toast="Договор откроется в PDF">Открыть</button>
+              <button class="pill" type="button" data-toast="Договор скачан">Скачать</button>
+            </div>
+            <div class="group" style="gap:12px">
+              <h3 class="t-h">Главное из договора</h3>
+              <dl class="terms" style="margin:0">
+                <div class="terms__row"><dt>Залог</dt><dd>Нет</dd></div>
+                <div class="terms__row"><dt>Предоплата</dt><dd>Входит в стоимость, спишем после проверки документов</dd></div>
+                <div class="terms__row"><dt>Отмена</dt><dd>Бесплатно не позднее чем за 48 часов до начала аренды, предоплату вернём. Позже предоплата не возвращается</dd></div>
+                <div class="terms__row"><dt>Пробег</dt><dd>Без суточного лимита, радиус до 1000 км, без выезда за пределы РФ</dd></div>
+                <div class="terms__row"><dt>Страховка</dt><dd>ОСАГО</dd></div>
+                <div class="terms__row"><dt>Штрафы</dt><dd>Штрафы ГИБДД за время аренды оплачивает арендатор</dd></div>
+                <div class="terms__row"><dt>Топливо и чистота</dt><dd>Топлива не меньше, чем при выдаче. Машину выдаём чистой, за грязную оплачивается мойка</dd></div>
+                <div class="terms__row"><dt>Досрочный возврат</dt><dd>Можно вернуть раньше, пересчитаем стоимость и вернём разницу</dd></div>
+                <div class="terms__row"><dt>Водитель</dt><dd>От 25 лет, стаж от 5 лет</dd></div>
+              </dl>
+            </div>
+            <div class="box box--grey" style="gap:2px"><div class="t-sm" style="font-weight:500">Хотите обсудить условия договора?</div><div class="t-sm muted">Позвоните: +7 (905) 076-86-39</div></div>
+            <div class="group" style="gap:12px"><div class="t-sm muted">Нажимая кнопку, вы принимаете условия договора. Подписать его нужно будет при выдаче машины</div><div><button class="primary" type="button" id="accept">Принять и перейти к оплате</button></div></div>
+          </div></div></div>
+        </li>
+
+        <li class="step" id="s4" data-state="locked">
+          <div class="step__head">
+            <span class="badge"><span>4</span><svg width="16" height="16"><use href="#i-check"/></svg></span>
+            <div class="step__titles"><div class="step__title">Оплата</div><div class="step__desc" id="s4-desc"></div></div>
+            <div class="step__aside" id="s4-aside"></div>
+          </div>
+          <div class="collapse" id="s4-body"><div class="collapse__inner"><div class="step__content">
+            <div class="box box--sage">
+              <h3 class="t-h">Предоплата 1 000 ₽</h3>
+              <ul class="bullets">
+                <li>Входит в стоимость аренды. Остальные 34 280 ₽ оплатите при выдаче машины</li>
+                <li>Сейчас сумму только заморозим на карте и спишем, когда проверим документы</li>
+                <li>Если документы не пройдут проверку, вернём предоплату</li>
+                <li>Отмена не позднее чем за 48 часов до начала аренды: предоплату вернём</li>
+              </ul>
+            </div>
+            <div class="doc-card">
+              <svg width="48" height="34" viewBox="0 0 48 34" style="filter:var(--shadow-doc)" aria-hidden="true"><rect x="2.5" y="2.5" width="43" height="28" rx="5" fill="#fff" stroke="#dcdbd7"/><rect x="7" y="8" width="9" height="7" rx="2" fill="#738776"/><rect x="7" y="19" width="26" height="3" rx="1.5" fill="#dcdbd7"/><rect x="7" y="24" width="14" height="3" rx="1.5" fill="#262623"/><rect x="36" y="24" width="6" height="3" rx="1.5" fill="#dcdbd7"/></svg>
+              <div class="doc-card__text"><div class="t-sm" style="font-weight:500">Оплата картой через СберБанк</div><div class="t-sm muted">Перейдёте на защищённую страницу банка. Данные карты вводятся там, после оплаты вернётесь сюда</div></div>
+            </div>
+            <div><button class="primary" type="button" id="pay">Перейти к оплате 1 000 ₽</button></div>
+          </div></div></div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="booking" id="booking" hidden aria-labelledby="bk-title">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><h1 class="t-title" id="bk-title">Бронь № 1017</h1><span class="chip"><span class="check-c" style="width:16px;height:16px;background:var(--sage-500)"><svg width="10" height="10"><use href="#i-check"/></svg></span>Подтверждена</span></div>
+      <div style="display:flex;flex-direction:column;gap:24px;margin-top:24px">
+        <div class="banner reveal"><span class="check-c"><svg width="18" height="18"><use href="#i-check"/></svg></span><div><div class="t-h">Мария, бронь подтверждена</div><div class="t-sm muted">Документы проверены, предоплата 1 000 ₽ списана. Ждём вас 17 октября в 10:00 по адресу: Кемерово, ул. Кирова, 41</div></div></div>
+        <div class="box box--grey reveal" style="animation-delay:.08s;border-radius:16px">
+          <h3 class="t-h">Что дальше</h3>
+          <ul class="bullets">
+            <li>Приезжайте 17 октября к 10:00: Кемерово, ул. Кирова, 41</li>
+            <li>Возьмите паспорт и водительское удостоверение</li>
+            <li>Подпишете договор и оплатите остаток 34 280 ₽</li>
+            <li>Машину выдадим чистой и с тем же уровнем топлива, вернуть её нужно 24 октября до 10:00</li>
+          </ul>
+          <div><button class="link" type="button" data-toast="Откроется карта с филиалом" style="color:var(--c900)">Показать на карте</button></div>
+        </div>
+        <div class="lines reveal" style="animation-delay:.16s">
+          <div class="line"><span>Документы</span><span style="display:flex;align-items:center;gap:8px"><span class="check-c" style="width:18px;height:18px"><svg width="11" height="11"><use href="#i-check"/></svg></span>Паспорт и права проверены</span><span></span></div>
+          <div class="line"><span>Договор аренды</span><span>PDF, ваши данные уже в договоре</span><button class="link" type="button" data-toast="Договор скачан" style="color:var(--c900)">Скачать</button></div>
+          <div class="line"><span>Связь с филиалом</span><span>+7 (905) 076-86-39</span><span></span></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;animation-delay:.24s"><button class="pill" type="button" data-toast="Здесь откроется подтверждение отмены">Отменить бронь</button><span class="t-sm muted">Бесплатно до 15 октября, 10:00. Позже предоплата не возвращается</span></div>
+      </div>
+    </section>
+
+    <aside class="details" aria-label="Детали бронирования">
+      <div class="details__inner">
+        <h2 class="t-title">Детали бронирования</h2>
+        <div class="car"><img src="data:image/jpeg;base64,{{CAR}}" alt="Chery Tiggo 7 Pro Max, белый"><div><div class="car__name">CHERY TIGGO 7 PRO MAX</div><div class="t-xs muted">2023 · автомат · полный привод</div></div></div>
+        <div class="det-block"><div><div class="t-h">Период аренды</div><div class="det-line"><span>Получение:</span> 17 октября, 10:00</div><div class="det-line"><span>Возврат:</span> 24 октября, 10:00</div></div><button class="small-btn edit" type="button">Изменить</button></div>
+        <div class="det-block"><div><div class="t-h">Место выдачи</div><div class="det-line muted" id="place">В филиале, без доп. услуг</div></div><button class="small-btn edit" type="button">Изменить</button></div>
+        <div class="cost">
+          <div class="t-h">Стоимость</div>
+          <div class="cost__row"><span>7 суток × 5 600 ₽</span><span>39 200 ₽</span></div>
+          <div class="cost__row"><span class="muted">Скидка 10%</span><span class="green">−3 920 ₽</span></div>
+          <div class="cost__row cost__row--total"><span>Всего</span><b>35 280 ₽</b></div>
+          <div class="cost__row cost__row--minor" id="pre-row" hidden><span id="pre-label">Предоплата сейчас</span><span>1 000 ₽</span></div>
+          <div class="cost__row cost__row--minor" id="rest-row" hidden><span>При выдаче</span><span>34 280 ₽</span></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+  <div class="foot gx"><button class="restart" type="button" id="restart">Начать сценарий заново</button></div>
+</div>
+
+<div class="overlay" id="login" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <button class="dialog__close" type="button" id="login-close" aria-label="Закрыть"><svg width="16" height="16"><use href="#i-x"/></svg></button>
+    <div id="login-view"></div>
+  </div>
+</div>
+
+<div class="bank" id="bank" hidden><div class="bank__card" id="bank-card"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const IMG = { main: "{{DOC_MAIN}}", reg: "{{DOC_REG}}", front: "{{DOC_FRONT}}", back: "{{DOC_BACK}}" };
+  const spin = (size = 22) => `<svg class="spinner spinner--on" width="${size}" height="${size}" aria-hidden="true"><use href="#i-spin"/></svg>`;
+  const person = (x, y, w, h, id) => `<clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2"/></clipPath><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="#dfe7e0"/><g clip-path="url(#${id})" fill="#738776"><circle cx="${x + w / 2}" cy="${y + h * .16 + w * .23}" r="${w * .23}"/><ellipse cx="${x + w / 2}" cy="${y + h * .98}" rx="${w * .42}" ry="${h * .34}"/></g>`;
+  const paper = (x, y, w, h, r) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="#fff" stroke="#dcdbd7"/>`;
+  const bar = (x, y, w, c = "#dcdbd7", h = 4) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h / 2}" fill="${c}"/>`;
+  const sc = (k, inner) => `<svg viewBox="0 0 120 96" aria-hidden="true"><g transform="translate(60 48) scale(${k}) translate(-60 -48)">${inner}</g></svg>`;
+  const ART = {
+    main: sc(1.1, paper(33, 8, 54, 80, 6) + `<rect x="33" y="47" width="54" height="1" fill="#dcdbd7"/>` + bar(40, 15, 34) + bar(40, 23, 24) + bar(40, 31, 38) + person(40, 54, 14, 19, "pm") + bar(59, 56, 22, "#262623") + bar(59, 64, 16) + bar(40, 79, 40, "#dcdbd7", 3)),
+    reg: sc(1.1, paper(20, 21, 80, 54, 5) + `<rect x="60" y="21" width="1" height="54" fill="#dcdbd7"/>` + bar(69, 26, 22, "#dcdbd7", 2) + `<rect x="64.5" y="31.5" width="31" height="23" rx="3" fill="none" stroke="#b7c7b9" stroke-dasharray="3 2"/>` + bar(68, 36, 18, "#262623", 3) + bar(68, 42, 24, "#dcdbd7", 3) + bar(68, 48, 16, "#dcdbd7", 3)),
+    front: sc(1.3, paper(20, 23, 80, 50, 5) + person(26, 30, 16, 21, "pf") + bar(47, 31, 28, "#262623", 3) + bar(47, 38, 40, "#dcdbd7", 3) + bar(47, 45, 30, "#dcdbd7", 3) + bar(26, 60, 24, "#dcdbd7", 3)),
+    back: sc(1.3, paper(20, 23, 80, 50, 5) + [31, 43, 55].map((y, i) => `<rect x="26" y="${y}" width="9" height="5" rx="1.5" fill="${i ? "#dcdbd7" : "#738776"}"/>` + bar(40, y + 1, i === 1 ? 28 : 36, "#dcdbd7", 3) + `<rect x="26" y="${y + 9}" width="68" height=".75" fill="#dcdbd7"/>`).join("")),
+  };
+  const SLOTS = { passport: [["main", "Главный разворот"], ["reg", "Страница с регистрацией"]], license: [["front", "Лицевая сторона"], ["back", "Оборотная сторона"]] };
+  const PASSPORT = [[["ФИО", "Иванова Мария Сергеевна"]], [["Дата рождения", "12.04.1994"], ["Серия и номер", "32 15 482916"]], [["Дата выдачи", "20.05.2014"], ["Код подразделения", "420-005"]], [["Кем выдан", "Отделом УФМС России по Кемеровской области в Центральном районе г. Кемерово"]], [["Адрес регистрации", "г. Кемерово, ул. Весенняя, д. 18, кв. 42"]]];
+  const LICENSE = [[["Серия и номер", "42 25 615803"], ["Дата выдачи", "14.03.2023"]], [["Срок действия", "до 14.03.2033"], ["Стаж с", "2014"]]];
+  const NAMES = { main: "главный разворот паспорта", reg: "страница с регистрацией", front: "лицевая сторона прав", back: "оборотная сторона прав" };
+
+  let S;
+  const reset = () => { S = { phone: "", docs: { main: "empty", reg: "empty", front: "empty", back: "empty" }, timers: {}, manual: false, docsSent: false, verified: false, named: false, timerId: null }; };
+
+  /* ---------- шаги ---------- */
+  const setStep = (n, state, desc, aside) => {
+    const el = $("#s" + n); el.dataset.state = state;
+    if (desc !== undefined) $(`#s${n}-desc`).textContent = desc;
+    if (aside !== undefined) $(`#s${n}-aside`).innerHTML = aside;
+    const body = $(`#s${n}-body`); if (body) body.classList.toggle("open", state === "current");
+  };
+  const focusStep = n => setTimeout(() => $("#s" + n).scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }), 380);
+
+  /* ---------- тост ---------- */
+  let toastT;
+  const toast = (text, ok) => { const t = $("#toast"); t.innerHTML = (ok ? `<span class="check-c" style="width:20px;height:20px"><svg width="12" height="12"><use href="#i-check"/></svg></span>` : "") + `<span>${text}</span>`; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600); };
+  document.addEventListener("click", e => { const b = e.target.closest("[data-toast]"); if (b) toast(b.dataset.toast); });
+
+  /* ---------- вход ---------- */
+  const overlay = $("#login"), view = $("#login-view");
+  const openLogin = () => { overlay.hidden = false; requestAnimationFrame(() => overlay.classList.add("show")); showPhone(); };
+  const closeLogin = () => { overlay.classList.remove("show"); clearInterval(S.timerId); setTimeout(() => overlay.hidden = true, 300); };
+  const fmtPhone = d => { let s = "+7"; if (d.length) s += " (" + d.slice(0, 3); if (d.length >= 3) s += ")"; if (d.length > 3) s += " " + d.slice(3, 6); if (d.length > 6) s += "-" + d.slice(6, 8); if (d.length > 8) s += "-" + d.slice(8, 10); return s; };
+  function showPhone() {
+    view.innerHTML = `<div class="view">
+      <div><h2 id="login-title">Введите номер телефона</h2><p class="t-sm muted" style="margin:4px 0 0">Отправим SMS с кодом. Если вы у нас впервые, аккаунт создастся сам</p></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="big-field" id="pf"><span class="sr-only" style="position:absolute;left:-9999px">Номер телефона</span><input id="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="+7 (000) 000-00-00"></label>
+        <div class="err-text" id="perr" hidden style="margin:0"></div>
+        <button class="primary big-btn" type="button" id="getcode" disabled>Получить код</button>
+      </div>
+      <p class="t-sm muted" style="margin:0">Нажимая «Получить код», вы соглашаетесь с политикой обработки персональных данных</p></div>`;
+    const inp = $("#phone"), btn = $("#getcode"), err = $("#perr");
+    let digits = S.phone;
+    const sync = () => { inp.value = digits ? fmtPhone(digits) : ""; const bad = digits.length && digits[0] !== "9"; err.hidden = !bad; err.textContent = bad ? "Нужен мобильный номер, он начинается с +7 9" : ""; $("#pf").classList.toggle("err", !!bad); btn.disabled = digits.length !== 10 || bad; };
+    inp.addEventListener("input", () => { let d = inp.value.replace(/\D/g, ""); if (d.startsWith("7") || d.startsWith("8")) d = d.slice(1); digits = d.slice(0, 10); sync(); });
+    inp.addEventListener("keydown", e => { if (e.key === "Enter" && !btn.disabled) btn.click(); });
+    btn.addEventListener("click", async () => { S.phone = digits; btn.disabled = true; btn.innerHTML = spin(20).replace("#262623", "") + "Отправляем код…"; btn.querySelector("svg").style.filter = "invert(1)"; await wait(900); showCode(); });
+    sync(); setTimeout(() => inp.focus(), 250);
+  }
+  function showCode() {
+    const masked = "+7 ••• " + S.phone.slice(6, 8) + "-" + S.phone.slice(8, 10);
+    view.innerHTML = `<div class="view">
+      <div><h2 id="login-title">Введите код</h2><p class="t-sm muted" style="margin:4px 0 0">Отправили SMS на ${masked}</p></div>
+      <div class="code" id="code">${[0, 1, 2, 3].map(i => `<input inputmode="numeric" maxlength="1" aria-label="Цифра ${i + 1}">`).join("")}</div>
+      <div class="t-sm muted" id="ccheck">Отправить код повторно через <span id="tm">0:59</span></div></div>`;
+    const cells = [...view.querySelectorAll(".code input")];
+    let left = 59; clearInterval(S.timerId);
+    S.timerId = setInterval(() => { left--; const t = $("#tm"); if (t) t.textContent = "0:" + String(Math.max(left, 0)).padStart(2, "0"); if (left <= 0) clearInterval(S.timerId); }, 1000);
+    const check = async () => { if (cells.some(c => !c.value)) return; cells.forEach(c => c.disabled = true); clearInterval(S.timerId); $("#ccheck").innerHTML = `<span style="display:flex;align-items:center;gap:8px">${spin(18)}Проверяем код…</span>`; await wait(1000); showSuccess(); };
+    cells.forEach((c, i) => {
+      c.addEventListener("input", () => { c.value = c.value.replace(/\D/g, "").slice(-1); if (c.value && cells[i + 1]) cells[i + 1].focus(); check(); });
+      c.addEventListener("keydown", e => { if (e.key === "Backspace" && !c.value && cells[i - 1]) cells[i - 1].focus(); });
+      c.addEventListener("paste", e => { const d = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 4); if (!d) return; e.preventDefault(); d.split("").forEach((x, j) => cells[j] && (cells[j].value = x)); check(); });
+    });
+    setTimeout(() => cells[0].focus(), 250);
+  }
+  function showSuccess() {
+    view.innerHTML = `<div class="view center">
+      <div class="success-icon"><svg width="28" height="28"><use href="#i-check"/></svg></div>
+      <div><h2 id="login-title" style="padding:0">Аккаунт создан</h2><p class="t-sm muted" style="margin:8px 0 0">Осталось загрузить паспорт и права, они нужны для договора. Проверка займёт до 15 минут</p></div>
+      <button class="primary big-btn" type="button" id="to-docs">Загрузить документы</button></div>`;
+    $("#to-docs").addEventListener("click", afterLogin); $("#to-docs").focus();
+  }
+  function afterLogin() {
+    closeLogin();
+    $("#auth-guest").hidden = true; $("#auth-user").hidden = false; $("#avatar").innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="6" r="3.5" fill="#526456"/><path d="M2.5 16c.8-3.3 3.3-5 6.5-5s5.7 1.7 6.5 5" fill="#526456"/></svg>`;
+    setTimeout(() => {
+      setStep(1, "done", "+7 ••• " + S.phone.slice(6, 8) + "-" + S.phone.slice(8, 10), `<button class="small-btn" type="button">Изменить</button>`);
+      setStep(2, "current", "Загрузите фото паспорта и прав, данные заполним сами", "");
+      focusStep(2);
+    }, 200);
+  }
+  $("#open-login").addEventListener("click", openLogin);
+  $("#login-close").addEventListener("click", closeLogin);
+  overlay.addEventListener("click", e => { if (e.target === overlay) closeLogin(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !overlay.hidden) closeLogin(); });
+
+  /* ---------- документы ---------- */
+  const renderSlots = () => {
+    for (const [g, list] of Object.entries(SLOTS)) {
+      $("#slots-" + g).innerHTML = list.map(([k, name]) => `
+        <div class="slot" data-k="${k}" data-s="empty">
+          <div class="tile" role="button" tabindex="0" aria-label="Загрузить: ${name}">
+            <div class="tile__clip">
+              <div class="tile__art">${ART[k]}</div>
+              <img class="tile__photo" alt="" src="data:image/jpeg;base64,${IMG[k]}">
+              <div class="tile__veil"><svg class="spinner" width="22" height="22" aria-hidden="true"><use href="#i-spin"/></svg></div>
+              <div class="tile__bar"><i></i></div>
+            </div>
+            <button class="tile__x" type="button" aria-label="Убрать фото: ${name}"><svg width="14" height="14"><use href="#i-x"/></svg></button>
+          </div>
+          <div class="slot__cap"><span class="slot__name">${name}</span><button class="link slot__status" type="button">Загрузить фото</button></div>
+        </div>`).join("");
+    }
+    document.querySelectorAll(".slot").forEach(slot => {
+      const k = slot.dataset.k;
+      const start = () => { if (S.docs[k] === "empty" || S.docs[k] === "done") upload(k); };
+      slot.querySelector(".tile").addEventListener("click", e => { if (!e.target.closest(".tile__x")) start(); });
+      slot.querySelector(".tile").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); start(); } });
+      slot.querySelector(".slot__status").addEventListener("click", start);
+      slot.querySelector(".tile__x").addEventListener("click", () => removeDoc(k));
+    });
+  };
+  const slotEl = k => document.querySelector(`.slot[data-k="${k}"]`);
+  const setDoc = (k, s) => {
+    S.docs[k] = s; const el = slotEl(k); el.dataset.s = s;
+    const st = el.querySelector(".slot__status");
+    const map = { empty: ["Загрузить фото", true], uploading: ["Загружаем…", false], recognizing: ["Распознаём…", false], done: ["Изменить", true] };
+    st.textContent = map[s][0]; st.classList.toggle("link", map[s][1]); st.disabled = !map[s][1];
+    if (s === "uploading") { const i = el.querySelector(".tile__bar i"); i.style.transition = "none"; i.style.width = "0"; i.offsetWidth; i.style.transition = ""; i.style.width = ""; }
+    updateData();
+  };
+  const clearT = k => { (S.timers[k] || []).forEach(clearTimeout); S.timers[k] = []; };
+  const upload = k => {
+    clearT(k); setDoc(k, "uploading");
+    S.timers[k] = [setTimeout(() => setDoc(k, "recognizing"), 1050), setTimeout(() => setDoc(k, "done"), 1050 + 1400 + Math.random() * 400)];
+  };
+  const removeDoc = k => { clearT(k); setDoc(k, "empty"); };
+
+  const fieldHTML = (label, value, id) => `<div class="field" data-id="${id}"><div class="field__box"><label for="${id}">${label}</label><input id="${id}" value="${value}"></div><div class="field__err"></div></div>`;
+  const rowsHTML = (rows, prefix, filled) => rows.map((r, i) => `<div class="row ${r.length === 1 ? "row--1" : ""}">${r.map(([l, v], j) => fieldHTML(l, filled ? v : "", `${prefix}-${i}-${j}`)).join("")}</div>`).join("");
+  const appear = root => [...root.querySelectorAll(".field:not(.in)")].forEach((f, i) => setTimeout(() => f.classList.add("in"), 60 + i * 70));
+  let passShown = false, licShown = false;
+  const updateData = () => {
+    const d = S.docs, passDone = d.main === "done" && d.reg === "done", licDone = d.front === "done" && d.back === "done";
+    const licAny = d.front !== "empty" || d.back !== "empty";
+    const show = passDone || licDone || S.manual;
+    $("#data-wrap").classList.toggle("open", show);
+    if ((passDone || S.manual) && !passShown) { passShown = true; $("#f-passport").innerHTML = `<div class="group__label">Паспорт</div>` + rowsHTML(PASSPORT, "p", !S.manual || passDone); appear($("#f-passport")); }
+    if (passDone && !S.named) { S.named = true; $("#avatar").textContent = "МИ"; $("#acc-name").textContent = "Мария И."; $("#auth-user").style.animation = "none"; $("#auth-user").offsetWidth; $("#auth-user").style.animation = ""; }
+    const lz = $("#lic-zone");
+    if ((licDone || S.manual) && !licShown) { licShown = true; lz.innerHTML = `<div class="fields"><div class="group__label">Водительское удостоверение</div>${rowsHTML(LICENSE, "l", !S.manual || licDone)}</div>`; appear(lz); lz.querySelector("#l-1-1").addEventListener("input", validate); }
+    else if (!licShown) lz.innerHTML = licAny ? `<div class="placeholder">${spin(20)}Распознаём права…</div>` : `<div class="placeholder">Загрузите права, их данные появятся здесь</div>`;
+    validate();
+  };
+  const validate = () => {
+    const d = S.docs, missing = Object.keys(d).filter(k => d[k] !== "done");
+    const stj = $("#l-1-1"); let bad = false;
+    if (stj) { const y = parseInt(stj.value, 10); bad = !(y && 2026 - y >= 5); const f = stj.closest(".field"); f.classList.toggle("err", bad && !!stj.value); f.querySelector(".field__err").textContent = "Нужен стаж от 5 лет"; }
+    const empty = [...document.querySelectorAll("#s2 .field input")].some(i => !i.value.trim());
+    const btn = $("#submit-docs"); btn.disabled = !!missing.length || bad || empty || !licShown || !passShown;
+    $("#submit-hint").textContent = missing.length ? "Осталось: " + missing.map(k => NAMES[k]).join(", ") : bad ? "Проверьте стаж" : empty ? "Заполните все поля" : "";
+  };
+  document.addEventListener("input", e => { if (e.target.closest("#s2 .field")) validate(); });
+  $("#manual").addEventListener("click", () => { S.manual = true; updateData(); });
+  $("#submit-docs").addEventListener("click", async () => {
+    const b = $("#submit-docs"); b.disabled = true; b.innerHTML = `<svg class="spinner spinner--on" width="20" height="20" style="filter:invert(1)"><use href="#i-spin"/></svg>Отправляем…`; await wait(700);
+    S.docsSent = true;
+    setStep(2, "pending", "Проверяем, до 15 минут. Можно продолжать, если что-то не так, пришлём уведомление", `<span class="pending-note">${spin(18)}Проверяем…</span>`);
+    setStep(3, "current", "Договор подпишете в филиале при выдаче машины", ""); focusStep(3);
+    setTimeout(() => verify(), 7000);
+  });
+  const verify = silent => { if (S.verified || !S.docsSent) return; S.verified = true; setStep(2, "done", "Паспорт и права проверены", ""); if (!silent) toast("Документы проверены", true); };
+
+  /* ---------- условия и оплата ---------- */
+  $("#accept").addEventListener("click", () => {
+    setStep(3, "done", "Приняты, договор подпишете при выдаче", `<button class="small-btn" type="button">Изменить</button>`);
+    setStep(4, "current", "Предоплата 1 000 ₽ подтверждает бронь", ""); focusStep(4);
+    $("#pre-row").hidden = false; $("#rest-row").hidden = false; $("#pre-row").classList.add("reveal"); $("#rest-row").classList.add("reveal");
+  });
+  $("#pay").addEventListener("click", async () => {
+    const bank = $("#bank"), card = $("#bank-card");
+    card.innerHTML = `${spin(28)}<div class="t-h">Переходим на страницу банка…</div><div class="t-sm muted">Оплата 1 000 ₽ картой. Данные карты вводятся на стороне банка</div>`;
+    bank.hidden = false; requestAnimationFrame(() => bank.classList.add("show"));
+    await wait(1800);
+    card.innerHTML = `<div class="success-icon" style="background:var(--sage-500)"><svg width="28" height="28"><use href="#i-check"/></svg></div><div class="t-h">Оплата прошла</div><div class="t-sm muted">Возвращаемся в WayKit</div>`;
+    await wait(1200);
+    verify(true); showBooking();
+    bank.classList.remove("show"); setTimeout(() => bank.hidden = true, 350);
+  });
+  const showBooking = () => {
+    $("#flow").hidden = true; $("#booking").hidden = false;
+    $("#back-text").textContent = "Вернуться в каталог";
+    document.querySelectorAll(".edit").forEach(b => b.hidden = true);
+    $("#place").textContent = "Филиал: Кемерово, ул. Кирова, 41"; $("#place").classList.remove("muted");
+    $("#pre-label").textContent = "Предоплата внесена";
+    $("#avatar").textContent = "МИ"; $("#acc-name").textContent = "Мария И.";
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
+  /* ---------- сценарий заново ---------- */
+  const start = () => {
+    reset(); passShown = false; licShown = false;
+    $("#flow").hidden = false; $("#booking").hidden = true;
+    $("#auth-guest").hidden = false; $("#auth-user").hidden = true; $("#acc-name").textContent = "Мой аккаунт";
+    $("#back-text").textContent = "Вернуться к карточке машины";
+    document.querySelectorAll(".edit").forEach(b => b.hidden = false);
+    $("#place").textContent = "В филиале, без доп. услуг"; $("#place").classList.add("muted");
+    $("#pre-row").hidden = true; $("#rest-row").hidden = true; $("#pre-label").textContent = "Предоплата сейчас";
+    setStep(1, "current", "Войдите по номеру телефона. Если вы у нас впервые, аккаунт создастся сам", `<button class="primary" type="button" id="open-login">Продолжить</button>`);
+    $("#open-login").addEventListener("click", openLogin);
+    setStep(2, "locked", "Откроется после входа", ""); setStep(3, "locked", "", ""); setStep(4, "locked", "", "");
+    $("#f-passport").innerHTML = ""; $("#lic-zone").innerHTML = ""; $("#data-wrap").classList.remove("open");
+    const b = $("#submit-docs"); b.textContent = "Всё верно, отправить на проверку";
+    renderSlots(); updateData(); window.scrollTo({ top: 0 });
+  };
+  $("#restart").addEventListener("click", start);
+  $("#back").addEventListener("click", e => e.preventDefault());
+  start();
+})();
+</script>
