@@ -197,6 +197,7 @@ img, svg { display: block; max-width: 100%; }
   box-shadow: var(--shadow-pop);
   z-index: 10;
 }
+.pop.pop--up { top: auto; bottom: calc(100% + 8px); }
 
 /* Список городов */
 .cities { width: 368px; max-width: 100%; padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
@@ -541,10 +542,13 @@ img, svg { display: block; max-width: 100%; }
   /* Если выпадашка не помещается в окно, докручиваем страницу */
   function revealPop(pop) {
     requestAnimationFrame(() => {
+      pop.classList.remove('pop--up');
       const r = pop.getBoundingClientRect();
       const overflow = r.bottom + 16 - window.innerHeight;
       if (overflow <= 0) return;
       const field = pop.parentElement.getBoundingClientRect();
+      /* не двигаем страницу: если снизу не помещается, а сверху есть место, открываем вверх */
+      if (field.top - 8 - r.height >= 16) { pop.classList.add('pop--up'); return; }
       const delta = Math.min(overflow, Math.max(0, field.top - 16));
       const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
       window.scrollBy({ top: delta, behavior: smooth ? 'smooth' : 'auto' });

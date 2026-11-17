@@ -34,7 +34,7 @@ img, svg { display: block; max-width: 100%; }
 .muted { color: var(--c600); }
 .link { font-size: 15px; line-height: 24px; font-weight: 500; color: var(--c600); text-decoration: underline; text-underline-offset: 3px; }
 .link:hover { color: var(--c900); }
-.gx { padding-left: max(36px, env(safe-area-inset-left, 0px)); padding-right: max(36px, env(safe-area-inset-right, 0px)); }
+.gx { padding-left: max(36px, calc((100% - 1440px) / 2 + 36px), env(safe-area-inset-left, 0px)); padding-right: max(36px, calc((100% - 1440px) / 2 + 36px), env(safe-area-inset-right, 0px)); }
 
 /* Шапка */
 .header { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--c200); }
@@ -84,7 +84,7 @@ img, svg { display: block; max-width: 100%; }
 .pill:hover { background: var(--c300); }
 
 /* Раскрытие шага */
-.collapse { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .55s var(--ease), opacity .4s var(--ease); }
+.collapse { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .75s var(--ease), opacity .6s var(--ease); }
 .collapse.open { grid-template-rows: 1fr; opacity: 1; }
 .collapse > .collapse__inner { overflow: hidden; min-height: 0; }
 .step__content { padding: 24px 0 8px 40px; display: flex; flex-direction: column; gap: 32px; }
@@ -426,7 +426,14 @@ img, svg { display: block; max-width: 100%; }
     if (aside !== undefined) $(`#s${n}-aside`).innerHTML = aside;
     const body = $(`#s${n}-body`); if (body) body.classList.toggle("open", state === "current");
   };
-  const focusStep = n => setTimeout(() => $("#s" + n).scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }), 380);
+  /* мягкая прокрутка: цель пересчитывается каждый кадр, поэтому не дёргается, пока соседний шаг сворачивается */
+  const easeScroll = (target, D = 1100) => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return window.scrollTo(0, target());
+    const y0 = scrollY, t0 = performance.now();
+    const f = t => { const k = Math.min(1, (t - t0) / D), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; window.scrollTo(0, y0 + (target() - y0) * e); if (k < 1) requestAnimationFrame(f); };
+    requestAnimationFrame(f);
+  };
+  const focusStep = n => setTimeout(() => easeScroll(() => Math.max(0, $("#s" + n).getBoundingClientRect().top + scrollY - 24)), 250);
 
   /* ---------- тост ---------- */
   let toastT;

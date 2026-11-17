@@ -119,13 +119,11 @@ body { background: var(--c50); color: var(--c900); font-family: var(--font-ui); 
 [hidden] { display: none !important; }
 .screen { min-height: 100vh; background: var(--c50); }
 .vp { font-family: var(--font-ui); }
-#cat-chery, #car-hero, #v-book .car img { view-transition-name: car-hero; }
-::view-transition-group(car-hero) { animation-duration: .6s; animation-timing-function: cubic-bezier(.22,.8,.24,1); }
-::view-transition-old(root) { animation: .28s cubic-bezier(.4,0,1,1) both wk-out; }
-::view-transition-new(root) { animation: .5s cubic-bezier(.22,.8,.24,1) .08s both wk-in; }
-.screen.wk-enter { animation: wk-in .5s cubic-bezier(.22,.8,.24,1) both; }
-@keyframes wk-out { to { opacity: 0; transform: translateY(-8px); } }
-@keyframes wk-in { from { opacity: 0; transform: translateY(14px); } }
+::view-transition-old(root) { animation: .4s cubic-bezier(.4,0,.6,1) both wk-out; }
+::view-transition-new(root) { animation: .7s cubic-bezier(.22,.8,.24,1) .12s both wk-in; }
+.screen.wk-enter { animation: wk-in .7s cubic-bezier(.22,.8,.24,1) both; }
+@keyframes wk-out { to { opacity: 0; } }
+@keyframes wk-in { from { opacity: 0; transform: translateY(10px); } }
 @keyframes wk-pulse { to { transform: scale(1.18); } }
 @media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
 """
