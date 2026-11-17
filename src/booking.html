@@ -325,7 +325,7 @@ img, svg { display: block; max-width: 100%; }
             <div class="box box--sage">
               <h3 class="t-h">Предоплата 1 000 ₽</h3>
               <ul class="bullets">
-                <li>Входит в стоимость аренды. Остальные 34 280 ₽ оплатите при выдаче машины</li>
+                <li>Входит в стоимость аренды. Остальные <span class="js-rest">34 280 ₽</span> оплатите при выдаче машины</li>
                 <li>Сейчас сумму только заморозим на карте и спишем, когда проверим документы</li>
                 <li>Если документы не пройдут проверку, вернём предоплату</li>
                 <li>Отмена не позднее чем за 48 часов до начала аренды: предоплату вернём</li>
@@ -344,13 +344,13 @@ img, svg { display: block; max-width: 100%; }
     <section class="booking" id="booking" hidden aria-labelledby="bk-title">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><h1 class="t-title" id="bk-title">Бронь № 1017</h1><span class="chip"><span class="check-c" style="width:16px;height:16px;background:var(--sage-500)"><svg width="10" height="10"><use href="#i-check"/></svg></span>Подтверждена</span></div>
       <div style="display:flex;flex-direction:column;gap:24px;margin-top:24px">
-        <div class="banner reveal"><span class="check-c"><svg width="18" height="18"><use href="#i-check"/></svg></span><div><div class="t-h">Мария, бронь подтверждена</div><div class="t-sm muted">Документы проверены, предоплата 1 000 ₽ списана. Ждём вас 17 октября в 10:00 по адресу: Кемерово, ул. Кирова, 41</div></div></div>
+        <div class="banner reveal"><span class="check-c"><svg width="18" height="18"><use href="#i-check"/></svg></span><div><div class="t-h">Мария, бронь подтверждена</div><div class="t-sm muted" id="bn-text">Документы проверены, предоплата 1 000 ₽ списана. Ждём вас 17 октября в 10:00 по адресу: Кемерово, ул. Кирова, 41</div></div></div>
         <div class="box box--grey reveal" style="animation-delay:.08s;border-radius:16px">
           <h3 class="t-h">Что дальше</h3>
           <ul class="bullets">
-            <li>Приезжайте 17 октября к 10:00: Кемерово, ул. Кирова, 41</li>
+            <li id="next-1">Приезжайте 17 октября к 10:00: Кемерово, ул. Кирова, 41</li>
             <li>Возьмите паспорт и водительское удостоверение</li>
-            <li>Подпишете договор и оплатите остаток 34 280 ₽</li>
+            <li>Подпишете договор и оплатите остаток <span class="js-rest">34 280 ₽</span></li>
             <li>Машину выдадим чистой и с тем же уровнем топлива, вернуть её нужно 24 октября до 10:00</li>
           </ul>
           <div><button class="link" type="button" data-toast="Откроется карта с филиалом" style="color:var(--c900)">Показать на карте</button></div>
@@ -374,9 +374,10 @@ img, svg { display: block; max-width: 100%; }
           <div class="t-h">Стоимость</div>
           <div class="cost__row"><span>7 суток × 5 600 ₽</span><span>39 200 ₽</span></div>
           <div class="cost__row"><span class="muted">Скидка 10%</span><span class="green">−3 920 ₽</span></div>
-          <div class="cost__row cost__row--total"><span>Всего</span><b>35 280 ₽</b></div>
+          <div class="cost__row" id="deliv-row" hidden><span class="muted">Доставка по городу</span><span>500 ₽</span></div>
+          <div class="cost__row cost__row--total"><span>Всего</span><b class="js-total">35 280 ₽</b></div>
           <div class="cost__row cost__row--minor" id="pre-row" hidden><span id="pre-label">Предоплата сейчас</span><span>1 000 ₽</span></div>
-          <div class="cost__row cost__row--minor" id="rest-row" hidden><span>При выдаче</span><span>34 280 ₽</span></div>
+          <div class="cost__row cost__row--minor" id="rest-row" hidden><span>При выдаче</span><span class="js-rest">34 280 ₽</span></div>
         </div>
       </div>
     </aside>
@@ -480,6 +481,7 @@ img, svg { display: block; max-width: 100%; }
   }
   function afterLogin() {
     closeLogin();
+    WK.auth("Мой аккаунт");
     $("#auth-guest").hidden = true; $("#auth-user").hidden = false; $("#avatar").innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="6" r="3.5" fill="#526456"/><path d="M2.5 16c.8-3.3 3.3-5 6.5-5s5.7 1.7 6.5 5" fill="#526456"/></svg>`;
     setTimeout(() => {
       setStep(1, "done", "+7 ••• " + S.phone.slice(6, 8) + "-" + S.phone.slice(8, 10), `<button class="small-btn" type="button">Изменить</button>`);
@@ -544,7 +546,7 @@ img, svg { display: block; max-width: 100%; }
     const show = passDone || licDone || S.manual;
     $("#data-wrap").classList.toggle("open", show);
     if ((passDone || S.manual) && !passShown) { passShown = true; $("#f-passport").innerHTML = `<div class="group__label">Паспорт</div>` + rowsHTML(PASSPORT, "p", !S.manual || passDone); appear($("#f-passport")); }
-    if (passDone && !S.named) { S.named = true; $("#avatar").textContent = "МИ"; $("#acc-name").textContent = "Мария И."; $("#auth-user").style.animation = "none"; $("#auth-user").offsetWidth; $("#auth-user").style.animation = ""; }
+    if (passDone && !S.named) { S.named = true; WK.auth("Мария И."); $("#avatar").textContent = "МИ"; $("#acc-name").textContent = "Мария И."; $("#auth-user").style.animation = "none"; $("#auth-user").offsetWidth; $("#auth-user").style.animation = ""; }
     const lz = $("#lic-zone");
     if ((licDone || S.manual) && !licShown) { licShown = true; lz.innerHTML = `<div class="fields"><div class="group__label">Водительское удостоверение</div>${rowsHTML(LICENSE, "l", !S.manual || licDone)}</div>`; appear(lz); lz.querySelector("#l-1-1").addEventListener("input", validate); }
     else if (!licShown) lz.innerHTML = licAny ? `<div class="placeholder">${spin(20)}Распознаём права…</div>` : `<div class="placeholder">Загрузите права, их данные появятся здесь</div>`;
@@ -589,7 +591,8 @@ img, svg { display: block; max-width: 100%; }
     $("#flow").hidden = true; $("#booking").hidden = false;
     $("#back-text").textContent = "Вернуться в каталог";
     document.querySelectorAll(".edit").forEach(b => b.hidden = true);
-    $("#place").textContent = "Филиал: Кемерово, ул. Кирова, 41"; $("#place").classList.remove("muted");
+    $("#place").textContent = WK.extras.delivery ? "Доставка по городу" + (WK.extras.seat ? ", детское кресло" : "") : "Филиал: Кемерово, ул. Кирова, 41" + (WK.extras.seat ? ", детское кресло" : ""); $("#place").classList.remove("muted");
+    S.done = true;
     $("#pre-label").textContent = "Предоплата внесена";
     $("#avatar").textContent = "МИ"; $("#acc-name").textContent = "Мария И.";
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -602,7 +605,7 @@ img, svg { display: block; max-width: 100%; }
     $("#auth-guest").hidden = false; $("#auth-user").hidden = true; $("#acc-name").textContent = "Мой аккаунт";
     $("#back-text").textContent = "Вернуться к карточке машины";
     document.querySelectorAll(".edit").forEach(b => b.hidden = false);
-    $("#place").textContent = "В филиале, без доп. услуг"; $("#place").classList.add("muted");
+    applyExtras(); WK.auth(null);
     $("#pre-row").hidden = true; $("#rest-row").hidden = true; $("#pre-label").textContent = "Предоплата сейчас";
     setStep(1, "current", "Войдите по номеру телефона. Если вы у нас впервые, аккаунт создастся сам", `<button class="primary" type="button" id="open-login">Продолжить</button>`);
     $("#open-login").addEventListener("click", openLogin);
@@ -611,8 +614,22 @@ img, svg { display: block; max-width: 100%; }
     const b = $("#submit-docs"); b.textContent = "Всё верно, отправить на проверку";
     renderSlots(); updateData(); window.scrollTo({ top: 0 });
   };
-  $("#restart").addEventListener("click", start);
-  $("#back").addEventListener("click", e => e.preventDefault());
+  /* ---------- допуслуги из карточки ---------- */
+  const fmt = n => n.toLocaleString("ru-RU").replace(/\s/g, " ") + " ₽";
+  function applyExtras() {
+    const x = WK.extras, total = WK.total();
+    const parts = [x.delivery ? "Доставка по городу" : "В филиале", x.seat ? "детское кресло" : ""].filter(Boolean);
+    $("#place").textContent = x.delivery || x.seat ? parts.join(", ") : "В филиале, без доп. услуг"; $("#place").classList.add("muted");
+    $("#deliv-row").hidden = !x.delivery;
+    document.querySelectorAll("#v-book .js-total").forEach(e => e.textContent = fmt(total));
+    document.querySelectorAll("#v-book .js-rest").forEach(e => e.textContent = fmt(total - 1000));
+    $("#bn-text").textContent = "Документы проверены, предоплата 1 000 ₽ списана. " + (x.delivery ? "Привезём машину 17 октября к 10:00, адрес доставки уточним по телефону" : "Ждём вас 17 октября в 10:00 по адресу: Кемерово, ул. Кирова, 41");
+    $("#next-1").textContent = x.delivery ? "17 октября к 10:00 привезём машину, адрес уточним по телефону" : "Приезжайте 17 октября к 10:00: Кемерово, ул. Кирова, 41";
+  }
+  WK.book = { start, enter: () => { if (S.done) start(); else if (!S.docsSent && !S.phone) applyExtras(); } };
+  $("#restart").addEventListener("click", () => { WK.go("search"); setTimeout(start, 600); });
+  $("#back").addEventListener("click", e => { e.preventDefault(); WK.go(S.done ? "catalog" : "card"); });
+  document.querySelector("#v-book .logo").addEventListener("click", e => { e.preventDefault(); WK.go("search"); });
   start();
 })();
 </script>
