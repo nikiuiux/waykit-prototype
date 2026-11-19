@@ -149,13 +149,14 @@ img, svg { display: block; max-width: 100%; }
 /* Баннер */
 .hero {
   position: relative;
-  height: 456px;
+  /* ниже, если окно невысокое: чтобы календарь под строкой поиска помещался целиком (584 = шапка, отступы, строка поиска, календарь) */
+  height: clamp(300px, calc(100vh - 584px), 456px);
   border-radius: 16px;
   overflow: hidden;
   background: var(--oat-soft-800) url(data:image/webp;base64,{{HERO}}) center / cover no-repeat;
 }
 .hero__content {
-  position: absolute; left: 20px; top: 260px; width: 663px; max-width: calc(100% - 40px);
+  position: absolute; left: 20px; bottom: 20px; width: 663px; max-width: calc(100% - 40px);
   display: flex; flex-direction: column; gap: 16px; color: var(--on-dark);
 }
 .hero__title { margin: 0; max-width: 611px; }
@@ -627,7 +628,14 @@ img, svg { display: block; max-width: 100%; }
     renderFields();
     /* выпадашка целиком в окне: если не помещается снизу, плавно докручиваем страницу */
     const bottom = f.btn.getBoundingClientRect().bottom + 8 + f.pop.offsetHeight + 24;
-    if (bottom > innerHeight) scrollBy({ top: bottom - innerHeight, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (bottom > innerHeight) {
+      const y0 = scrollY, dy = bottom - innerHeight, t0 = performance.now(), D = 520;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) scrollTo(0, y0 + dy);
+      else requestAnimationFrame(function step(t) {
+        const k = Math.min(1, (t - t0) / D), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+        scrollTo(0, y0 + dy * e); if (k < 1) requestAnimationFrame(step);
+      });
+    }
   }
   function close(focusField = true) {
     const key = state.open; if (!key) return;
