@@ -625,6 +625,9 @@ img, svg { display: block; max-width: 100%; }
     if (key === 'city') renderCities();
     if (key === 'params') renderParams();
     renderFields();
+    /* выпадашка целиком в окне: если не помещается снизу, плавно докручиваем страницу */
+    const bottom = f.btn.getBoundingClientRect().bottom + 8 + f.pop.offsetHeight + 24;
+    if (bottom > innerHeight) scrollBy({ top: bottom - innerHeight, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }
   function close(focusField = true) {
     const key = state.open; if (!key) return;
