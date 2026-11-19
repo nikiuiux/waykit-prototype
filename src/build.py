@@ -25,6 +25,8 @@ SVG = {
 
 html = (root / "template.html").read_text()
 html = html.replace("{{FONT}}", b64(a / "pt-root-ui-vf.woff2")).replace("{{HERO}}", b64(a / "hero.webp"))
+html = html.replace("{{ONEST_CYR_400}}", b64(a / "onest-cyrillic-400-normal.woff2")).replace("{{ONEST_LAT_400}}", b64(a / "onest-latin-400-normal.woff2"))
+html = html.replace("{{TILE_INTERIOR}}", b64(a / "search" / "tile-interior.jpg")).replace("{{TILE_PARKING}}", b64(a / "search" / "tile-parking.jpg"))
 html = html.replace("{{ONEST_CYR}}", b64(a / "onest-cyrillic-600-normal.woff2")).replace("{{ONEST_LAT}}", b64(a / "onest-latin-600-normal.woff2"))
 for k, v in SVG.items():
     html = html.replace("{{SVG_%s}}" % k, v)

@@ -104,6 +104,8 @@ shell_css = """
 @font-face { font-family: "PT Root UI VF"; src: url(data:font/woff2;base64,{{FONT}}) format("woff2"); font-weight: 300 700; font-display: swap; }
 @font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_CYR}}) format("woff2"); font-weight: 600; font-display: swap; unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
 @font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_LAT}}) format("woff2"); font-weight: 600; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_CYR_400}}) format("woff2"); font-weight: 400; font-display: swap; unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_LAT_400}}) format("woff2"); font-weight: 400; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 :root {
   color-scheme: light;
   --white: #ffffff; --c50: #f5f4f2; --c100: #e8e7e5; --c200: #dcdbd7; --c300: #c8c6c2; --c400: #a8a6a1;
@@ -170,6 +172,8 @@ R = {
     "THUMB0": b64(a / "flow" / "thumb0.jpg"), "THUMB1": b64(a / "flow" / "thumb1.jpg"), "THUMB2": b64(a / "flow" / "thumb2.jpg"),
     "CAR": b64(bkA / "car.jpg"), "DOC_MAIN": b64(bkA / "passport_main.jpg"), "DOC_REG": b64(bkA / "passport_reg.jpg"),
     "DOC_FRONT": b64(bkA / "license_front.jpg"), "DOC_BACK": b64(bkA / "license_back.jpg"),
+    "TILE_INTERIOR": b64(a / "search" / "tile-interior.jpg"), "TILE_PARKING": b64(a / "search" / "tile-parking.jpg"),
+    "ONEST_CYR_400": b64(a / "onest-cyrillic-400-normal.woff2"), "ONEST_LAT_400": b64(a / "onest-latin-400-normal.woff2"),
 }
 R.update({"SVG_" + k: v for k, v in SVG.items()})
 for k, v in R.items():
