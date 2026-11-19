@@ -370,9 +370,9 @@ body { background: var(--c50); color: var(--c900); font-family: var(--font-ui); 
 .vp .month { display: flex; flex-direction: column; gap: 16px; }
 .vp .month__head { display: flex; align-items: center; }
 .vp .month__nav { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; flex: none; }
-.vp .month__nav--prev { background: var(--c100); opacity: .5; cursor: default; }
+.vp .month__nav { background: var(--c200); transition: background-color .15s, opacity .15s; }
+.vp .month__nav:disabled { background: var(--c100); opacity: .5; cursor: default; }
 .vp .month__nav--prev svg { transform: rotate(90deg); }
-.vp .month__nav--next { background: var(--c200); }
 .vp .month__nav--next svg { transform: rotate(-90deg); }
 .vp .month__title { flex: 1; display: flex; justify-content: center; gap: 8px; font-family: var(--font-display); font-weight: 600; font-size: 18px; line-height: 28px; color: var(--c900); }
 .vp .month__title span { color: var(--c400); }
@@ -1039,6 +1039,7 @@ window.WK = (() => {
       b.addEventListener('focus', () => { state.preview = name; renderFields(); });
       b.addEventListener('click', () => {
         state.city = name; state.preview = null; state.errors.delete('city');
+        document.querySelectorAll('.location span').forEach(el => el.textContent = name);
         close(false);
         if (!state.end) open('dates'); else fields.city.btn.focus({ preventScroll: true });
       });
@@ -1208,6 +1209,7 @@ window.WK = (() => {
     }
     state.errors.clear(); renderFields();
     const parts = [state.city, state.end && datesText(), paramsText()].filter(Boolean);
+    WK.search = { city: state.city, start: state.start, end: state.end };
     status.textContent = 'Ищем машины';
     const btn = $('.search__submit'); btn.classList.add('is-loading');
     setTimeout(() => { WK.go('catalog'); btn.classList.remove('is-loading'); }, 650);
@@ -1222,16 +1224,16 @@ window.WK = (() => {
 
 <section class="screen vp" id="v-cat" hidden aria-label="Каталог">
   <div data-hd></div>
-  <div class="cat-head"><div class="cat-head__in"><h1>Результат поиска</h1><p>Найдено 24 машины в <span class="city"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M17 7.75C17 12.75 10 19.25 10 19.25C10 19.25 3 12.75 3 7.75C3 6.83075 3.18106 5.92049 3.53284 5.07122C3.88463 4.22194 4.40024 3.45026 5.05025 2.80025C5.70026 2.15024 6.47194 1.63463 7.32122 1.28284C8.1705 0.93106 9.08075 0.75 10 0.75C10.9193 0.75 11.8295 0.93106 12.6788 1.28284C13.5281 1.63463 14.2997 2.15024 14.9497 2.80025C15.5998 3.45026 16.1154 4.22194 16.4672 5.07122C16.8189 5.92049 17 6.83075 17 7.75ZM12.4 7.75C12.4 7.11348 12.1471 6.50303 11.6971 6.05294C11.247 5.60286 10.6365 5.35 10 5.35C9.36348 5.35 8.75303 5.60286 8.30294 6.05294C7.85286 6.50303 7.6 7.11348 7.6 7.75C7.6 8.38652 7.85286 8.99697 8.30294 9.44706C8.75303 9.89714 9.36348 10.15 10 10.15C10.6365 10.15 11.247 9.89714 11.6971 9.44706C12.1471 8.99697 12.4 8.38652 12.4 7.75Z" fill-rule="evenodd" clip-rule="evenodd" fill="#526456"/></svg>Кемерово</span></p></div></div>
+  <div class="cat-head"><div class="cat-head__in"><h1>Результат поиска</h1><p>Найдено 24 машины в <span class="city"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M17 7.75C17 12.75 10 19.25 10 19.25C10 19.25 3 12.75 3 7.75C3 6.83075 3.18106 5.92049 3.53284 5.07122C3.88463 4.22194 4.40024 3.45026 5.05025 2.80025C5.70026 2.15024 6.47194 1.63463 7.32122 1.28284C8.1705 0.93106 9.08075 0.75 10 0.75C10.9193 0.75 11.8295 0.93106 12.6788 1.28284C13.5281 1.63463 14.2997 2.15024 14.9497 2.80025C15.5998 3.45026 16.1154 4.22194 16.4672 5.07122C16.8189 5.92049 17 6.83075 17 7.75ZM12.4 7.75C12.4 7.11348 12.1471 6.50303 11.6971 6.05294C11.247 5.60286 10.6365 5.35 10 5.35C9.36348 5.35 8.75303 5.60286 8.30294 6.05294C7.85286 6.50303 7.6 7.11348 7.6 7.75C7.6 8.38652 7.85286 8.99697 8.30294 9.44706C8.75303 9.89714 9.36348 10.15 10 10.15C10.6365 10.15 11.247 9.89714 11.6971 9.44706C12.1471 8.99697 12.4 8.38652 12.4 7.75Z" fill-rule="evenodd" clip-rule="evenodd" fill="#526456"/></svg><span id="cat-city">Кемерово</span></span></p></div></div>
   <div class="cat">
     <aside class="filters" aria-label="Фильтры">
       <div class="fsec">
         <h2 class="ftitle">Период аренды</h2>
-        <div class="fpair"><div class="flabel">Выдача авто</div><div class="frow"><div class="fbox fbox--date">17 октября 2026</div><div class="fbox fbox--time">10:00<i data-ic="caret"></i></div></div></div>
-        <div class="fpair"><div class="flabel">Возврат авто</div><div class="frow"><div class="fbox fbox--date">24 октября 2026</div><div class="fbox fbox--time">10:00<i data-ic="caret"></i></div></div></div>
+        <div class="fpair"><div class="flabel">Выдача авто</div><div class="frow"><div class="fbox fbox--date" id="f-start">17 октября 2026</div><div class="fbox fbox--time">10:00<i data-ic="caret"></i></div></div></div>
+        <div class="fpair"><div class="flabel">Возврат авто</div><div class="frow"><div class="fbox fbox--date" id="f-end">24 октября 2026</div><div class="fbox fbox--time">10:00<i data-ic="caret"></i></div></div></div>
       </div>
       <div class="month">
-        <div class="month__head"><button class="month__nav month__nav--prev" type="button" aria-label="Предыдущий месяц" aria-disabled="true"><i data-ic="caretDark"></i></button><div class="month__title">Октябрь<span>2026</span></div><button class="month__nav month__nav--next" type="button" aria-label="Следующий месяц"><i data-ic="caretDark"></i></button></div>
+        <div class="month__head"><button class="month__nav month__nav--prev" type="button" aria-label="Предыдущий месяц" id="cal-prev"><i data-ic="caretDark"></i></button><div class="month__title" id="cal-title">Октябрь<span>2026</span></div><button class="month__nav month__nav--next" type="button" aria-label="Следующий месяц" id="cal-next"><i data-ic="caretDark"></i></button></div>
         <div class="wd"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
         <div class="days" id="cal"></div>
       </div>
@@ -1386,27 +1388,59 @@ window.WK = (() => {
     const b = e.target.closest(".vp .check, .vp .chip"); if (b) b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true");
     const s = e.target.closest("[data-step]"); if (s) { const p = $("#pass"); p.textContent = Math.min(7, Math.max(1, +p.textContent + +s.dataset.step)); }
   });
-  /* календарь: октябрь 2026, 1-е число четверг; 1–14 прошли, 17–24 выбраны */
-  const cal = ["<span></span>", "<span></span>", "<span></span>"];
-  for (let d = 1; d <= 31; d++) cal.push(`<span class="day${d < 15 ? " dis" : d === 17 ? " rs" : d === 24 ? " re" : d > 17 && d < 24 ? " in" : ""}">${d}</span>`);
-  for (let d = 1; cal.length < 42; d++) cal.push(`<span class="day next">${d}</span>`);
-  $("#cal").innerHTML = cal.join("");
+  /* город и даты приходят с главной (WK.search); без поиска показываем макет: Кемерово, 17–24 октября */
+  const MONTHS = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+  const MONTHS_GEN = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+  const TODAY = new Date(2026, 9, 10); /* тот же «сегодня», что на главной */
+  const Q = () => WK.search || { city: "Кемерово", start: new Date(2026, 9, 17), end: new Date(2026, 9, 24) };
+  const dLong = d => `${d.getDate()} ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`;
+  let view;
+  const renderCal = () => {
+    const { start, end } = Q(), first = view, lead = (first.getDay() + 6) % 7, cells = [];
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(first.getFullYear(), first.getMonth(), i - lead + 1);
+      if (d < first && i < 7) { cells.push("<span></span>"); continue; }
+      const t = +d, cls = t === +start ? " rs" : t === +end ? " re" : t > +start && t < +end ? " in" : d.getMonth() !== first.getMonth() ? " next" : d < TODAY ? " dis" : "";
+      cells.push(`<span class="day${cls}">${d.getDate()}</span>`);
+    }
+    $("#cal").innerHTML = cells.join("");
+    $("#cal-title").innerHTML = `${MONTHS[first.getMonth()]}<span>${first.getFullYear()}</span>`;
+    $("#cal-prev").disabled = first <= new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  };
+  $("#cal-prev").addEventListener("click", () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); renderCal(); });
+  $("#cal-next").addEventListener("click", () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); renderCal(); });
+  const applySearch = () => {
+    const { city, start, end } = Q();
+    $("#cat-city").textContent = city;
+    $("#f-start").textContent = dLong(start); $("#f-end").textContent = dLong(end);
+    view = new Date(start.getFullYear(), start.getMonth(), 1); renderCal();
+  };
+  applySearch();
+
+  /* цена за период: базовая цена за сутки и скидки по сроку, как в «Чем дольше аренда, тем дешевле» */
+  const nf = n => n.toLocaleString("ru-RU").replace(/\s/g, " ");
+  const tier = n => n >= 30 ? 20 : n >= 16 ? 15 : n >= 6 ? 10 : n >= 2 ? 5 : 0;
+  const priceFor = old7 => {
+    const { start, end } = Q(), n = Math.round((end - start) / 864e5), base = +old7.replace(/\s/g, "") / 7, pct = tier(n), day = Math.round(base * (100 - pct) / 100);
+    return { n, pct, day: nf(day), total: nf(day * n), old: nf(base * n) };
+  };
 
   /* карточки, макет Catalog / Card 2.0 */
   const BADGE = { 2: "Доступна с 16:00", 4: "Доступна с 12:00", 7: "Доступна с 12:00", 10: "Доступна с 16:00" };
   const grid = $("#grid");
   const skeleton = () => { grid.classList.remove("ready"); grid.innerHTML = Array.from({ length: 6 }, () => `<div class="skel"><div class="skel__ph"></div><div class="skel__l" style="width:60%"></div><div class="skel__l" style="width:40%"></div><div class="skel__l" style="width:50%"></div></div>`).join(""); };
   const fill = () => {
-    grid.innerHTML = META.map(([n, y, m, p, o, d], i) => `
-      <button class="card" type="button" style="--i:${i}" data-car="${i}" aria-label="${n} ${y}, ${p} ₽ за 7 суток">
+    grid.innerHTML = META.map(([n, y, m, , o], i) => { const P = priceFor(o); return `
+      <button class="card" type="button" style="--i:${i}" data-car="${i}" aria-label="${n} ${y}, ${P.total} ₽ за ${P.n} сут.">
         <div class="card__media"><div class="card__ph"><img ${i === CHERY ? 'id="cat-chery"' : ""} src="data:image/webp;base64,${CARS[i]}" alt=""></div>${BADGE[i] ? `<span class="badge">${BADGE[i]}</span>` : ""}<span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
         <div class="card__body"><div><div class="card__name">${n}<span>${y}</span></div><div class="card__specs">${m.split(" • ").map(t => `<span>${t}</span>`).join('<span class="sep">•</span>')}</div></div>
-        <div><div class="card__total"><div><b>${p} ₽</b><span class="old">${o} ₽${STRIKE}</span></div><span class="disc">−10%</span></div><div class="card__day">${d} ₽/сутки</div></div></div>
-      </button>`).join("");
+        <div><div class="card__total"><div><b>${P.total} ₽</b>${P.pct ? `<span class="old">${P.old} ₽${STRIKE}</span>` : ""}</div>${P.pct ? `<span class="disc">−${P.pct}%</span>` : ""}</div><div class="card__day">${P.day} ₽/сутки</div></div></div>
+      </button>`; }).join("");
     requestAnimationFrame(() => requestAnimationFrame(() => grid.classList.add("ready")));
   };
   let loaded = false;
   WK.onEnter.catalog = from => {
+    if (from === "search") applySearch();
     if (from === "search" || !loaded) { skeleton(); setTimeout(() => { fill(); loaded = true; }, 750); }
   };
   grid.addEventListener("click", e => {

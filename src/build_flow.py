@@ -82,7 +82,9 @@ rep = [
     ('id="toast"', 'id="toast-s"'), ("$('#toast')", "$('#toast-s')"),
     ("const today = startOfDay(new Date());", "const today = new Date(2026, 9, 10);"),
     ("    const msg = `Ищем авто: ${parts.join(' · ')}`;\n    status.textContent = msg; showToast(msg);",
-     "    status.textContent = 'Ищем машины';\n    const btn = $('.search__submit'); btn.classList.add('is-loading');\n    setTimeout(() => { WK.go('catalog'); btn.classList.remove('is-loading'); }, 650);"),
+     "    WK.search = { city: state.city, start: state.start, end: state.end };\n    status.textContent = 'Ищем машины';\n    const btn = $('.search__submit'); btn.classList.add('is-loading');\n    setTimeout(() => { WK.go('catalog'); btn.classList.remove('is-loading'); }, 650);"),
+    ("state.city = name; state.preview = null; state.errors.delete('city');",
+     "state.city = name; state.preview = null; state.errors.delete('city');\n        document.querySelectorAll('.location span').forEach(el => el.textContent = name);"),
     ('<a class="logo" href="#"', '<a class="logo" href="#" onclick="event.preventDefault()"'),
 ]
 for x, y in rep:
