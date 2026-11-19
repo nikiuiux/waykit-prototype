@@ -106,6 +106,8 @@ shell_css = """
 @font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_LAT}}) format("woff2"); font-weight: 600; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_CYR_400}}) format("woff2"); font-weight: 400; font-display: swap; unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
 @font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_LAT_400}}) format("woff2"); font-weight: 400; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_CYR_500}}) format("woff2"); font-weight: 500; font-display: swap; unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: "Onest"; src: url(data:font/woff2;base64,{{ONEST_LAT_500}}) format("woff2"); font-weight: 500; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 :root {
   color-scheme: light;
   --white: #ffffff; --c50: #f5f4f2; --c100: #e8e7e5; --c200: #dcdbd7; --c300: #c8c6c2; --c400: #a8a6a1;
@@ -116,6 +118,7 @@ shell_css = """
   --font-display: "Onest", "PT Root UI VF", system-ui, sans-serif;
   --ease: cubic-bezier(.22,.8,.24,1);
 }
+html { scrollbar-gutter: stable; }
 html, body { margin: 0; }
 body { background: var(--c50); color: var(--c900); font-family: var(--font-ui); font-size: 17px; line-height: 26px; -webkit-font-smoothing: antialiased; }
 [hidden] { display: none !important; }
@@ -163,7 +166,7 @@ html = (
     f'<section class="screen" id="v-book" hidden aria-label="Бронирование">{b_body}</section>\n'
 )
 
-cars = [b64(a / "flow" / f"car{i}.jpg") for i in range(12)]
+cars = [b64(a / "catalog" / f"car{i}.webp") for i in range(12)]
 bkA = a / "booking"
 R = {
     "FONT": b64(a / "pt-root-ui-vf.woff2"), "ONEST_CYR": b64(a / "onest-cyrillic-600-normal.woff2"),
@@ -174,6 +177,7 @@ R = {
     "DOC_FRONT": b64(bkA / "license_front.jpg"), "DOC_BACK": b64(bkA / "license_back.jpg"),
     "TILE_INTERIOR": b64(a / "search" / "tile-interior.jpg"), "TILE_PARKING": b64(a / "search" / "tile-parking.jpg"),
     "ONEST_CYR_400": b64(a / "onest-cyrillic-400-normal.woff2"), "ONEST_LAT_400": b64(a / "onest-latin-400-normal.woff2"),
+    "ONEST_CYR_500": b64(a / "onest-cyrillic-500-normal.woff2"), "ONEST_LAT_500": b64(a / "onest-latin-500-normal.woff2"),
 }
 R.update({"SVG_" + k: v for k, v in SVG.items()})
 for k, v in R.items():
